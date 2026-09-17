@@ -1,0 +1,997 @@
+/* ==========================================================================
+   FACEID BIOMETRICS SYSTEM - TAILWIND CSS v4 HUD & RETICLE OVERLAY
+   ========================================================================== */
+
+/* High-Definition Camera Stream & Image Rendering Optimizations */
+#video-feed,
+#image-feed {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  filter: contrast(1.04) brightness(1.02) saturate(1.06);
+}
+
+#overlay-canvas {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+  transform: translateZ(0);
+}
+
+#detail-log-image,
+#reg-preview-img,
+.credential-avatar-img,
+.table-avatar-img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+}
+
+/* Face Oval Mask Overlay - Fluid Responsive Sizing for Mobile & Desktop */
+.face-guide-mask {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 330px;
+  max-width: 82%;
+  max-height: 82%;
+  border-radius: 50% / 45%;
+  border: 2.5px dashed rgba(148, 163, 184, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 0 9999px rgba(3, 7, 18, 0.68);
+}
+
+@media (min-width: 640px) {
+  .face-guide-mask {
+    width: 300px;
+    height: 380px;
+    max-width: 85%;
+    max-height: 85%;
+  }
+}
+
+.face-guide-mask.aligned {
+  border-color: #10b981;
+  border-style: solid;
+  border-width: 3px;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.5), 0 0 0 9999px rgba(3, 7, 18, 0.68);
+}
+
+.face-guide-mask.denied {
+  border-color: #f43f5e;
+  border-style: solid;
+  border-width: 3px;
+  box-shadow: 0 0 25px rgba(244, 63, 94, 0.5), 0 0 0 9999px rgba(3, 7, 18, 0.68);
+}
+
+/* Scanner Corners & Laser */
+.corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+}
+.corner.top-left { top: 8px; left: 8px; }
+.corner.top-right { top: 8px; right: 8px; }
+.corner.bottom-left { bottom: 8px; left: 8px; }
+.corner.bottom-right { bottom: 8px; right: 8px; }
+
+.scan-laser {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #10b981, transparent);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  animation: scan-laser-anim 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes scan-laser-anim {
+  0% { top: 5%; opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { top: 95%; opacity: 0.2; }
+}
+
+/* Status Overlay States */
+.status-overlay.success {
+  border-color: #10b981;
+  background-color: rgba(6, 78, 59, 0.92);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.status-overlay.danger {
+  border-color: #f43f5e;
+  background-color: rgba(136, 19, 55, 0.92);
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.3);
+}
+
+.status-overlay.success .status-icon { color: #10b981; }
+.status-overlay.danger .status-icon { color: #f43f5e; }
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ==========================================================================
+   SIDEBAR DRILL-DOWN ACCORDION & COMPACT RAIL STYLES (DOCK TO EDGE)
+   ========================================================================== */
+.sidebar-submenu {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-submenu.open {
+  max-height: 300px;
+  opacity: 1;
+}
+
+.submenu-arrow {
+  transition: transform 0.25s ease;
+}
+
+.submenu-arrow.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Compact Rail View Mode (Narrow 56px Width) */
+aside.sidebar-compact {
+  width: 3.5rem !important; /* 56px */
+}
+
+aside.sidebar-compact .sidebar-text-hide {
+  display: none !important;
+}
+
+aside.sidebar-compact .sidebar-brand-box {
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  gap: 0 !important;
+}
+
+aside.sidebar-compact .sidebar-brand-icon {
+  margin: 0 auto !important;
+}
+
+aside.sidebar-compact .sidebar-search-box {
+  justify-content: center !important;
+  padding: 0.5rem 0.25rem !important;
+}
+
+aside.sidebar-compact .sidebar-search-box input {
+  display: none !important;
+}
+
+aside.sidebar-compact .sidebar-parent-btn,
+aside.sidebar-compact .sidebar-subitem-btn {
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+aside.sidebar-compact .submenu-arrow {
+  display: none !important;
+}
+
+aside.sidebar-compact .sidebar-submenu {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  border-left: none !important;
+}
+
+aside.sidebar-compact .sidebar-user-card {
+  justify-content: center !important;
+  padding: 0.5rem 0.25rem !important;
+}
+
+/* Main Content Wrapper Adjustment when Sidebar is Compact */
+.main-content-compact {
+  margin-left: 3.5rem !important; /* 56px */
+}
+
+/* Mobile Viewport & Strict Width Bounds (Prevents horizontal expanding) */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*, ::before, ::after {
+  box-sizing: border-box;
+}
+
+#main-content-wrapper,
+#scanner-hud-card,
+#result-display {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Mobile Fullscreen Auth Mode (< 640px) */
+@media (max-width: 639px) {
+  #main-content-wrapper {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+    padding-top: 0.25rem !important;
+  }
+  
+  #view-auth {
+    width: 100% !important;
+    min-height: calc(100vh - 5.25rem) !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  #view-auth #scanner-hud-card {
+    border-radius: 1rem !important;
+    border: 1px solid rgba(30, 41, 59, 0.8) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto;
+  }
+
+  #view-auth .scanner-viewport-box {
+    aspect-ratio: 3/4 !important;
+    width: 100% !important;
+  }
+}
+
+/* Large Monitor Compact Constraints (>= 640px) */
+@media (min-width: 640px) {
+  #scanner-hud-card {
+    max-width: 440px !important;
+  }
+  .scanner-viewport-box {
+    max-height: 330px !important;
+  }
+}
+
+/* ==========================================================================
+   MODAL OVERLAYS & MOBILE LAYOUT FIXES
+   ========================================================================== */
+.hidden,
+[hidden],
+.modal-overlay.hidden,
+.fixed.inset-0.hidden,
+#modal-branch.hidden,
+#modal-profile.hidden,
+#modal-system-user.hidden,
+#modal-edit-credential.hidden,
+#modal-log-details.hidden,
+#modal-pwa-instructions.hidden,
+#system-login-overlay.hidden {
+  display: none !important;
+}
+
+.modal-overlay:not(.hidden),
+.fixed.inset-0:not(.hidden) {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+@media (max-width: 639px) {
+  .modal-overlay:not(.hidden),
+  .fixed.inset-0:not(.hidden),
+  #system-login-overlay:not(.hidden) {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+    align-items: flex-start !important;
+  }
+  
+  .modal-card,
+  #modal-login .modal-card,
+  #system-login-overlay > div,
+  .fixed.inset-0 > div {
+    margin-top: 0.25rem !important;
+    max-height: calc(100vh - 0.5rem) !important;
+    overflow-y: auto !important;
+  }
+
+  #main-content-wrapper,
+  .main-content-compact {
+    padding-top: 0.25rem !important;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE APP LAYOUT (SIDEBAR & BOTTOM NAV)
+   ========================================================================== */
+@media (min-width: 768px) {
+  #app-sidebar {
+    display: flex !important;
+  }
+  #nav-bar-bottom,
+  .mobile-header-banner {
+    display: none !important;
+  }
+  .desktop-dashboard-header {
+    display: flex !important;
+  }
+  #main-content-wrapper {
+    margin-left: 16rem !important; /* 256px */
+  }
+  #main-content-wrapper.main-content-compact {
+    margin-left: 3.5rem !important; /* 56px */
+  }
+}
+
+@media (max-width: 767px) {
+  #app-sidebar,
+  .desktop-dashboard-header {
+    display: none !important;
+  }
+  #nav-bar-bottom,
+  .mobile-header-banner {
+    display: flex !important;
+  }
+  #main-content-wrapper {
+    margin-left: 0 !important;
+  }
+}
+
+/* ==========================================================================
+   TELA DE LOGIN E PROTEÇÃO DE ACESSO (Oculta menus e telas antes do login)
+   ========================================================================== */
+body.unauthenticated #app-sidebar,
+body.unauthenticated #nav-bar-bottom,
+body.unauthenticated #main-content-wrapper,
+body.unauthenticated header {
+  display: none !important;
+}
+
+#system-login-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 99999 !important;
+  background-color: #090d16 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#system-login-overlay.hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   FIGMA TAILWIND ALERTS DESIGN SYSTEM (38+ Free Tailwind Alert in Figma)
+   ========================================================================== */
+
+#toast-notification-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+  width: 100%;
+  max-width: 24rem; /* 384px */
+}
+
+@media (max-width: 640px) {
+  #toast-notification-container {
+    top: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    max-width: calc(100vw - 1.5rem);
+  }
+}
+
+.tailwind-alert-toast {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: alertSlideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.tailwind-alert-toast.removing {
+  animation: alertSlideOutRight 0.3s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+@keyframes alertSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes alertSlideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+}
+
+/* 1. Success Variant (Emerald) */
+.tailwind-alert-toast.alert-success {
+  background: rgba(6, 26, 18, 0.92);
+  border-color: rgba(16, 185, 129, 0.35);
+  border-left: 4px solid #10b981;
+}
+.tailwind-alert-toast.alert-success .alert-icon-pill {
+  background: rgba(16, 185, 129, 0.18);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+.tailwind-alert-toast.alert-success .alert-progress-bar {
+  background: #10b981;
+}
+
+/* 2. Danger / Error Variant (Rose) */
+.tailwind-alert-toast.alert-danger,
+.tailwind-alert-toast.alert-error {
+  background: rgba(35, 10, 18, 0.92);
+  border-color: rgba(244, 63, 94, 0.35);
+  border-left: 4px solid #f43f5e;
+}
+.tailwind-alert-toast.alert-danger .alert-icon-pill,
+.tailwind-alert-toast.alert-error .alert-icon-pill {
+  background: rgba(244, 63, 94, 0.18);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #fb7185;
+}
+.tailwind-alert-toast.alert-danger .alert-progress-bar,
+.tailwind-alert-toast.alert-error .alert-progress-bar {
+  background: #f43f5e;
+}
+
+/* 3. Warning Variant (Amber) */
+.tailwind-alert-toast.alert-warning {
+  background: rgba(36, 23, 7, 0.92);
+  border-color: rgba(245, 158, 11, 0.35);
+  border-left: 4px solid #f59e0b;
+}
+.tailwind-alert-toast.alert-warning .alert-icon-pill {
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+.tailwind-alert-toast.alert-warning .alert-progress-bar {
+  background: #f59e0b;
+}
+
+/* 4. Info Variant (Cyan/Sky) */
+.tailwind-alert-toast.alert-info {
+  background: rgba(8, 26, 38, 0.92);
+  border-color: rgba(6, 182, 212, 0.35);
+  border-left: 4px solid #06b6d4;
+}
+.tailwind-alert-toast.alert-info .alert-icon-pill {
+  background: rgba(6, 182, 212, 0.18);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  color: #22d3ee;
+}
+.tailwind-alert-toast.alert-info .alert-progress-bar {
+  background: #06b6d4;
+}
+
+/* Progress bar inside toast */
+.tailwind-alert-toast .alert-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.tailwind-alert-toast .alert-progress-bar {
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  transition: transform linear;
+}
+
+/* Modal Confirmation Alert Dialog */
+#modal-confirm-dialog {
+  animation: fadeInModal 0.2s ease-out forwards;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================================================
+   LIGHT / WHITE THEME SYSTEM (Claro / Escuro)
+   ========================================================================== */
+html.light body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.light #main-content-wrapper {
+  background-color: #f8fafc !important;
+}
+
+html.light #app-sidebar {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.04);
+}
+
+html.light .mobile-header-banner {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+html.light .desktop-dashboard-header {
+  border-color: #e2e8f0 !important;
+}
+
+html.light #scanner-hud-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.07);
+}
+
+html.light #result-display {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light #panel-register,
+html.light #panel-credentials,
+html.light #view-system-users > div,
+html.light #view-profiles > div,
+html.light #view-branches > div,
+html.light #view-status > div,
+html.light #view-audit > div,
+html.light #section-audit {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+}
+
+html.light input,
+html.light select,
+html.light textarea {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.light input:focus,
+html.light select:focus,
+html.light textarea:focus {
+  background-color: #ffffff !important;
+  border-color: #0891b2 !important;
+  box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.15) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.light input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+html.light input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.2) opacity(0.7);
+  cursor: pointer;
+}
+
+/* Table header and row styles */
+html.light thead tr {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+html.light thead th {
+  color: #334155 !important;
+}
+
+html.light tbody tr {
+  border-color: #f1f5f9 !important;
+}
+
+html.light tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+html.light .divide-slate-800\/40 > * {
+  border-color: #f1f5f9 !important;
+}
+
+/* Button Base Styles (Unified Dark & Light compatibility) */
+.btn-export-excel {
+  background-color: #0891b2 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25) !important;
+}
+.btn-export-excel:hover {
+  background-color: #06b6d4 !important;
+  color: #ffffff !important;
+}
+
+.btn-primary-action {
+  background-color: #0891b2 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+.btn-primary-action:hover {
+  background-color: #06b6d4 !important;
+  color: #ffffff !important;
+}
+
+/* Text elements */
+html.light h1.text-white,
+html.light h2.text-white,
+html.light h3.text-white,
+html.light h4.text-white,
+html.light span.text-white:not(button span):not([class*="bg-"] span),
+html.light p.text-white,
+html.light div.text-white:not(button div):not([class*="bg-"]) {
+  color: #0f172a !important;
+}
+
+html.light button.text-white,
+html.light .text-white.btn-export-excel,
+html.light .text-white.btn-primary-action,
+html.light button[class*="bg-"] .text-white,
+html.light button[class*="bg-emerald"],
+html.light button[class*="bg-cyan"],
+html.light button[class*="bg-blue"],
+html.light button[class*="bg-rose"],
+html.light button[class*="bg-teal"] {
+  color: #ffffff !important;
+}
+
+html.light .sidebar-subitem-btn.bg-cyan-500\/15,
+html.light .sidebar-subitem-btn.bg-emerald-500\/15 {
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+  border-color: #7dd3fc !important;
+  font-weight: 700 !important;
+}
+
+html.light .text-slate-200 {
+  color: #1e293b !important;
+}
+
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-400 {
+  color: #64748b !important;
+}
+
+html.light .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* High Contrast Accent Texts in Light Mode */
+html.light .text-emerald-400 {
+  color: #059669 !important;
+  font-weight: 600;
+}
+
+html.light .text-cyan-400 {
+  color: #0891b2 !important;
+  font-weight: 600;
+}
+
+html.light .text-rose-400 {
+  color: #dc2626 !important;
+  font-weight: 600;
+}
+
+html.light .text-blue-400 {
+  color: #2563eb !important;
+  font-weight: 600;
+}
+
+html.light .text-amber-400 {
+  color: #d97706 !important;
+  font-weight: 600;
+}
+
+/* Colored Status Badges & Pills in Light Mode */
+html.light .bg-emerald-500\/10,
+html.light .bg-emerald-500\/15,
+html.light .bg-emerald-500\/20 {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+  font-weight: 600 !important;
+}
+
+html.light .bg-rose-500\/10,
+html.light .bg-rose-500\/15,
+html.light .bg-rose-500\/20 {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #b91c1c !important;
+  font-weight: 600 !important;
+}
+
+html.light .bg-cyan-500\/10,
+html.light .bg-cyan-500\/15,
+html.light .bg-cyan-500\/20 {
+  background-color: #ecfeff !important;
+  border-color: #a5f3fc !important;
+  color: #0e7490 !important;
+  font-weight: 600 !important;
+}
+
+html.light .bg-blue-500\/10,
+html.light .bg-blue-500\/15,
+html.light .bg-blue-500\/20 {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  color: #1d4ed8 !important;
+  font-weight: 600 !important;
+}
+
+html.light .bg-amber-500\/10,
+html.light .bg-amber-500\/15,
+html.light .bg-amber-500\/20 {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #b45309 !important;
+  font-weight: 600 !important;
+}
+
+/* Surface backgrounds */
+html.light .bg-\[\#0d1320\],
+html.light .bg-\[\#090d16\],
+html.light .bg-\[\#0a0f1a\],
+html.light .bg-\[\#131b2e\],
+html.light .bg-\[\#151c2e\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Sub-containers & Filter bars */
+html.light #container-audit-access > div:first-child,
+html.light #container-audit-db > div:first-child,
+html.light #panel-credentials .bg-\[\#090d16\],
+html.light #modal-log-details .bg-\[\#090d16\],
+html.light #modal-edit-credential .bg-\[\#090d16\],
+html.light #modal-profile .bg-\[\#090d16\],
+html.light #modal-system-user .bg-\[\#090d16\],
+html.light #modal-branch .bg-\[\#090d16\] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .bg-slate-800 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+html.light .bg-slate-800\/40,
+html.light .bg-slate-800\/50,
+html.light .bg-slate-800\/80,
+html.light .bg-slate-800\/90 {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+html.light .bg-slate-900,
+html.light .bg-slate-900\/95,
+html.light .bg-slate-950\/95 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .border-slate-800,
+html.light .border-slate-800\/60,
+html.light .border-slate-800\/80,
+html.light .border-slate-700,
+html.light .border-slate-700\/80 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Badges and Filter count */
+html.light #audit-filter-count-badge,
+html.light #db-filter-count-badge {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+/* Buttons in light mode */
+html.light button.bg-slate-800 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+html.light button.bg-slate-800:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Sub-Tab Navigation in Audit */
+html.light #btn-subtab-access.bg-cyan-500\/15,
+html.light #btn-subtab-db.bg-cyan-500\/15,
+html.light #btn-subtab-access.bg-emerald-500\/15,
+html.light #btn-subtab-db.bg-emerald-500\/15 {
+  background-color: #e0f2fe !important;
+  color: #0369a1 !important;
+  border-color: #7dd3fc !important;
+  font-weight: 700 !important;
+}
+
+html.light #btn-subtab-access:not(.bg-cyan-500\/15):not(.bg-emerald-500\/15),
+html.light #btn-subtab-db:not(.bg-cyan-500\/15):not(.bg-emerald-500\/15) {
+  color: #64748b !important;
+}
+
+html.light #btn-subtab-access:not(.bg-cyan-500\/15):not(.bg-emerald-500\/15):hover,
+html.light #btn-subtab-db:not(.bg-cyan-500\/15):not(.bg-emerald-500\/15):hover {
+  color: #0f172a !important;
+  background-color: #f1f5f9 !important;
+}
+
+/* Pagination Bar in Light Mode */
+html.light #access-page-info,
+html.light #db-page-info,
+html.light #cred-page-info {
+  color: #475569 !important;
+}
+
+html.light #access-pagination-controls button:not(.bg-cyan-600),
+html.light #db-pagination-controls button:not(.bg-cyan-600) {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+html.light #access-pagination-controls button:not(.bg-cyan-600):hover,
+html.light #db-pagination-controls button:not(.bg-cyan-600):hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Modals */
+html.light #modal-log-details > div,
+html.light #modal-edit-credential > div,
+html.light #modal-profile > div,
+html.light #modal-system-user > div,
+html.light #modal-branch > div,
+html.light .modal-box {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18) !important;
+}
+
+html.light .sidebar-user-card {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .sidebar-user-card #operator-display-name {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+html.light .sidebar-user-card #operator-display-username {
+  color: #64748b !important;
+}
+
+html.light .sidebar-user-card button {
+  color: #64748b !important;
+}
+
+html.light .sidebar-user-card button:hover {
+  background-color: #e2e8f0 !important;
+  color: #dc2626 !important;
+}
+
+html.light body,
+html.light body.unauthenticated {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.light #system-login-overlay {
+  background-color: #f1f5f9 !important;
+}
+
+html.light #system-login-overlay > div {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.12) !important;
+}
+
+html.light #system-login-overlay input {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.light #system-login-overlay input:focus {
+  background-color: #ffffff !important;
+  border-color: #0891b2 !important;
+}
+
+html.light #system-login-overlay img {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light #modal-alert-dialog > div,
+html.light #modal-confirm-dialog > div,
+html.light #modal-pwa-instructions > div {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2) !important;
+}
+
+html.light #reg-search-results {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light #reg-search-results > div:hover {
+  background-color: #f1f5f9 !important;
+}
+
+html.light .theme-toggle-btn {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+html.light .theme-toggle-btn:hover {
+  background-color: #e2e8f0 !important;
+}
+
+html.light nav.fixed.bottom-0 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05) !important;
+}

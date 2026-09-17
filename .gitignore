@@ -1,0 +1,23 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Node Dependencies
+node_modules/
+npm-debug.log*
+
+# SSL Certificates & Private Keys (Cybersecurity - Zero Leaked Keys)
+data/cert.pem
+data/key.pem
+*.pem
+*.key
+*.crt
+
+# System & OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Folders
+.idea/
+.vscode/

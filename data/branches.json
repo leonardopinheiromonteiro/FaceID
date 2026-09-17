@@ -1,0 +1,23 @@
+[
+  {
+    "code": "0001",
+    "name": "Filial Matriz",
+    "cnpj": "00.000.000/0001-00",
+    "active": true,
+    "createdAt": "2026-09-15T19:14:32.759Z"
+  },
+  {
+    "code": "0101",
+    "name": "Matriz",
+    "cnpj": "00.000.000/0001-00",
+    "active": true,
+    "createdAt": "2026-09-15T20:08:44.473Z"
+  },
+  {
+    "code": "0102",
+    "name": "Adoro",
+    "cnpj": "00.000.000/0002-00",
+    "active": true,
+    "createdAt": "2026-09-15T20:08:44.476Z"
+  }
+]

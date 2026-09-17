@@ -1,0 +1,44 @@
+-- Migration 001: Initial Core Schema for FaceID
+CREATE TABLE IF NOT EXISTS users (
+  id VARCHAR(64) PRIMARY KEY,
+  branch VARCHAR(10) DEFAULT '0101',
+  registration VARCHAR(20) DEFAULT '',
+  name VARCHAR(255) NOT NULL,
+  department VARCHAR(100) DEFAULT '',
+  role VARCHAR(100) DEFAULT 'Colaborador',
+  is_blocked BOOLEAN DEFAULT FALSE,
+  descriptor JSONB NOT NULL,
+  image TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS access_logs (
+  id VARCHAR(64) PRIMARY KEY,
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  matched_user_id VARCHAR(64),
+  matched_user_name VARCHAR(255),
+  branch VARCHAR(10) DEFAULT '0101',
+  registration VARCHAR(20) DEFAULT '',
+  image TEXT,
+  match_distance NUMERIC(6,4),
+  match_percentage INT,
+  success BOOLEAN NOT NULL,
+  status_text TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS system_logs (
+  id VARCHAR(64) PRIMARY KEY,
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  level VARCHAR(20) NOT NULL,
+  action VARCHAR(100) NOT NULL,
+  message TEXT NOT NULL,
+  metadata JSONB,
+  ip VARCHAR(45)
+);
+
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  version INT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

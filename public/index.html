@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d1320">
+  <title>FaceID Biometrics - Autenticação Biométrica</title>
+  
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=1.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=1.0">
+  <link rel="shortcut icon" href="favicon.ico?v=1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.0">
+  
+  <link rel="manifest" href="manifest.json">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Tailwind CSS v4 Browser Engine -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <!-- face-api.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <!-- Custom Animations & Reticle Styles -->
+  <link rel="stylesheet" href="styles.css?v=2.9">
+</head>
+<body class="unauthenticated bg-[#090d16] text-neutral-100 font-['Inter',sans-serif] min-h-screen antialiased selection:bg-cyan-400 selection:text-black">
+  
+  <div class="min-h-screen flex bg-[#090d16] text-neutral-100">
+    
+    <!-- SIDEBAR COLADA À BORDA (Component Collector Style) -->
+    <aside id="app-sidebar" class="fixed top-0 left-0 bottom-0 h-screen w-64 bg-[#0d1320] flex flex-col justify-between border-r border-slate-800/80 z-40 transition-all duration-300 rounded-none shadow-2xl">
+      
+      <!-- Top Section: Header + Search + Menu -->
+      <div class="flex flex-col w-full">
+        
+        <!-- Header Row (Hamburger + Brand Logo) -->
+        <div class="h-16 px-3.5 flex items-center justify-between border-b border-slate-800/60 shrink-0">
+          <div class="flex items-center gap-3 overflow-hidden sidebar-brand-box">
+            <img src="icon.png?v=1.0" alt="FaceID Logo" class="w-9 h-9 rounded-xl object-contain shrink-0 sidebar-brand-icon border border-cyan-500/30 bg-[#151c2e] p-1 shadow-sm">
+            <div class="flex flex-col min-w-0 sidebar-text-hide">
+              <h1 class="text-sm font-bold text-white tracking-tight leading-tight truncate">
+                FaceID <span class="text-cyan-400">Biometrics</span>
+              </h1>
+              <p class="text-[10px] text-slate-400 truncate">Validação & Gestão</p>
+            </div>
+          </div>
+
+          <button onclick="toggleSidebarCompact()" class="w-8 h-8 rounded-lg hover:bg-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center text-sm transition-all shrink-0" title="Alternar Tamanho">
+            <i id="sidebar-toggle-icon" class="fa-solid fa-bars transition-transform"></i>
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="p-3 border-b border-slate-800/40 sidebar-search-box flex">
+          <div class="w-full bg-[#151c2e] hover:bg-[#1a243a] border border-slate-800/80 rounded-xl px-3 py-2 flex items-center gap-2.5 text-xs text-slate-400 transition-all cursor-text focus-within:border-emerald-400/60 focus-within:ring-1 focus-within:ring-emerald-400/40">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 shrink-0"></i>
+            <input type="text" placeholder="Search..." oninput="searchSidebarMenu(this.value)" class="bg-transparent border-none outline-none text-white text-xs w-full placeholder-slate-500 sidebar-text-hide">
+          </div>
+        </div>
+
+        <!-- Vertical Menu Navigation -->
+        <nav class="p-3 flex flex-col gap-1.5 w-full overflow-y-auto max-h-[calc(100vh-14rem)] pr-1 scrollbar-thin">
+          
+          <!-- SINGLE PAGE ITEM 1: Autenticação -->
+          <button id="tab-auth" onclick="switchTab('auth')" class="sidebar-subitem-btn py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-start gap-3 transition-all bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 w-full">
+            <i class="fa-solid fa-shield-halved text-sm w-4 text-center shrink-0"></i>
+            <span class="sidebar-text-hide truncate">Autenticação Biométrica</span>
+          </button>
+
+          <!-- SECTION 1: Biometria & Cadastro -->
+          <div id="group-biometrics" class="flex flex-col gap-1 mt-1">
+            <button onclick="toggleSubmenu('sub-biometrics', this)" class="sidebar-parent-btn w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/50 flex items-center justify-between transition-all group">
+              <div class="flex items-center gap-3 min-w-0">
+                <i class="fa-solid fa-user-plus text-slate-400 text-sm w-4 text-center shrink-0"></i>
+                <span class="sidebar-text-hide truncate">Cadastrar Nova Face</span>
+              </div>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 group-hover:text-slate-300 submenu-arrow rotate-180"></i>
+            </button>
+
+            <div id="sub-biometrics" class="sidebar-submenu open flex flex-col gap-1 pl-3.5 ml-2 border-l border-slate-800/60">
+              <button id="tab-register" onclick="switchTab('register')" class="sidebar-subitem-btn py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-start gap-2.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 w-full">
+                <i class="fa-solid fa-camera text-xs w-4 text-center"></i>
+                <span class="sidebar-text-hide truncate">Capturar Registro</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SECTION 2: Gestão & Segurança -->
+          <div id="group-gestao" class="flex flex-col gap-1 mt-1">
+            <button onclick="toggleSubmenu('sub-gestao', this)" class="sidebar-parent-btn w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/50 flex items-center justify-between transition-all group">
+              <div class="flex items-center gap-3 min-w-0">
+                <i class="fa-solid fa-shield-halved text-slate-400 text-sm w-4 text-center shrink-0"></i>
+                <span class="sidebar-text-hide truncate">Gestão & Segurança</span>
+              </div>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 group-hover:text-slate-300 submenu-arrow rotate-180"></i>
+            </button>
+
+            <div id="sub-gestao" class="sidebar-submenu open flex flex-col gap-1 pl-3.5 ml-2 border-l border-slate-800/60">
+              <button id="tab-credentials" onclick="switchTab('credentials')" class="sidebar-subitem-btn py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-start gap-2.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 w-full">
+                <i class="fa-solid fa-id-card text-xs w-4 text-center"></i>
+                <span class="sidebar-text-hide truncate">Credenciais</span>
+              </button>
+
+              <button id="tab-audit" onclick="switchTab('audit')" class="sidebar-subitem-btn py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-start gap-2.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 w-full">
+                <i class="fa-solid fa-clock-rotate-left text-xs w-4 text-center"></i>
+                <span class="sidebar-text-hide truncate">Histórico Auditoria</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SECTION 3: Gestão de Acessos -->
+          <div id="group-acessos" class="flex flex-col gap-1 mt-1">
+            <button onclick="toggleSubmenu('sub-acessos', this)" class="sidebar-parent-btn w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/50 flex items-center justify-between transition-all group">
+              <div class="flex items-center gap-3 min-w-0">
+                <i class="fa-solid fa-user-shield text-slate-400 text-sm w-4 text-center shrink-0"></i>
+                <span class="sidebar-text-hide truncate">Gestão de Acessos</span>
+              </div>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 group-hover:text-slate-300 submenu-arrow rotate-180"></i>
+            </button>
+
+            <div id="sub-acessos" class="sidebar-submenu open flex flex-col gap-1 pl-3.5 ml-2 border-l border-slate-800/60">
+              <button id="tab-system_users" onclick="switchTab('system_users')" class="sidebar-subitem-btn py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-start gap-2.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 w-full">
+                <i class="fa-solid fa-user-gear text-xs w-4 text-center"></i>
+                <span class="sidebar-text-hide truncate">Usuários do Sistema</span>
+              </button>
+
+              <button id="tab-profiles" onclick="switchTab('profiles')" class="sidebar-subitem-btn py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-start gap-2.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 w-full">
+                <i class="fa-solid fa-users-gear text-xs w-4 text-center"></i>
+                <span class="sidebar-text-hide truncate">Perfis & Grupos</span>
+              </button>
+
+              <button id="tab-branches" onclick="switchTab('branches')" class="sidebar-subitem-btn py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-start gap-2.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 w-full">
+                <i class="fa-solid fa-building text-xs w-4 text-center"></i>
+                <span class="sidebar-text-hide truncate">Empresas / Filiais</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SECTION 4: Infraestrutura -->
+          <div id="group-infra" class="flex flex-col gap-1 mt-1">
+            <button onclick="toggleSubmenu('sub-infra', this)" class="sidebar-parent-btn w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/50 flex items-center justify-between transition-all group">
+              <div class="flex items-center gap-3 min-w-0">
+                <i class="fa-solid fa-sliders text-slate-400 text-sm w-4 text-center shrink-0"></i>
+                <span class="sidebar-text-hide truncate">Infraestrutura</span>
+              </div>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 group-hover:text-slate-300 submenu-arrow rotate-180"></i>
+            </button>
+
+            <div id="sub-infra" class="sidebar-submenu open flex flex-col gap-1 pl-3.5 ml-2 border-l border-slate-800/60">
+              <button id="tab-status" onclick="switchTab('status')" class="sidebar-subitem-btn py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-start gap-2.5 transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 w-full">
+                <i class="fa-solid fa-microchip text-xs w-4 text-center"></i>
+                <span class="sidebar-text-hide truncate">Status do Sistema</span>
+              </button>
+            </div>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Bottom User Profile Card (Pinned at edge bottom) -->
+      <div class="mt-auto border-t border-slate-800/80 p-3 bg-[#0a0f1a] flex items-center justify-between shrink-0 sidebar-user-card">
+        <div class="flex items-center gap-3 overflow-hidden">
+          <div id="operator-avatar" class="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shrink-0 shadow-inner">
+            OP
+          </div>
+          <div class="flex flex-col min-w-0 sidebar-text-hide">
+            <span id="operator-display-name" class="text-xs font-semibold text-white truncate">Operador</span>
+            <span id="operator-display-username" class="text-[10px] text-slate-400 truncate">@login</span>
+          </div>
+        </div>
+
+        <button onclick="handleSystemLogout()" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center text-xs transition-colors shrink-0 sidebar-text-hide" title="Encerrar Sessão">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT AREA (Fluid & Responsive) -->
+    <div id="main-content-wrapper" class="flex-1 ml-0 md:ml-64 transition-all duration-300 min-h-screen p-3 sm:p-6 md:p-8 flex flex-col gap-4 sm:gap-6 bg-[#090d16] pb-24 md:pb-8 w-full max-w-full overflow-x-hidden box-border">
+      
+      <!-- Top Mobile Banner Header -->
+      <header class="mobile-header-banner items-center justify-between bg-[#0d1320] border border-slate-800/80 rounded-2xl p-3 sm:p-4 shadow-md w-full max-w-full overflow-hidden box-border">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <img src="icon.png?v=1.0" alt="FaceID Logo" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain border border-cyan-500/30 bg-[#151c2e] p-1 shrink-0 shadow-sm">
+          <div class="min-w-0">
+            <h1 class="text-xs sm:text-sm font-bold text-white tracking-tight leading-tight truncate">
+              FaceID <span class="text-cyan-400">Biometrics</span>
+            </h1>
+            <p class="text-[10px] sm:text-[11px] text-slate-400 truncate">Validação Biométrica</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" onclick="toggleTheme()" class="theme-toggle-btn px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer" title="Alternar Modo Escuro / Claro">
+            <i class="theme-toggle-icon fa-solid fa-sun text-amber-400"></i>
+          </button>
+          <button type="button" onclick="toggleFullScreen()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all" title="Tela Cheia">
+            <i class="fa-solid fa-expand text-emerald-400"></i>
+          </button>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Ativo
+          </span>
+        </div>
+      </header>
+
+      <!-- Top Dashboard Header (Desktop) -->
+      <div class="desktop-dashboard-header items-center justify-between pb-2 border-b border-slate-800/60">
+        <div>
+          <h2 class="text-lg font-bold text-white tracking-tight">Painel de Validação Biométrica</h2>
+          <p class="text-xs text-slate-400">Reconhecimento facial com IA em tempo real & armazenamento PostgreSQL</p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button type="button" onclick="toggleTheme()" class="theme-toggle-btn px-3 py-1.5 bg-[#151c2e] hover:bg-[#1a243a] border border-slate-800 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm" title="Alternar Modo Escuro / Claro">
+            <i class="theme-toggle-icon fa-solid fa-sun text-amber-400"></i>
+            <span class="theme-toggle-label">Modo Claro</span>
+          </button>
+
+          <button type="button" onclick="toggleFullScreen()" class="px-3 py-1.5 bg-[#151c2e] hover:bg-[#1a243a] border border-slate-800 text-slate-300 rounded-xl text-xs font-medium flex items-center gap-2 transition-all cursor-pointer shadow-sm">
+            <i class="fa-solid fa-expand text-emerald-400"></i> Tela Cheia
+          </button>
+
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#151c2e] border border-slate-800 text-emerald-400">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span> Sistema Online
+          </span>
+        </div>
+      </div>
+
+      <!-- Scanner HUD Card (Viewport Cam + Reticle Guide) -->
+      <div id="scanner-hud-card" class="bg-[#0d1320] border-0 sm:border border-slate-800/80 rounded-xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col w-full sm:max-w-md md:max-w-md lg:max-w-md xl:max-w-md mx-auto box-border transition-all duration-300">
+        
+        <!-- Viewport Scanner (Fluid Responsive Viewport: Full mobile viewport / Compact monitor view) -->
+        <div class="scanner-viewport-box relative w-full aspect-[3/4] sm:aspect-[4/3] bg-black overflow-hidden rounded-t-xl sm:rounded-t-3xl max-w-full">
+          
+          <!-- Mirror Wrapper -->
+          <div id="camera-mirror-wrapper" class="absolute inset-0 w-full h-full overflow-hidden -scale-x-100 transition-transform">
+            <video id="video-feed" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover block bg-black"></video>
+            <img id="image-feed" class="hidden absolute inset-0 w-full h-full object-contain bg-black" alt="Imagem Carregada">
+            <canvas id="overlay-canvas" class="absolute inset-0 w-full h-full pointer-events-none block z-10"></canvas>
+          </div>
+
+          <!-- Camera Error Banner -->
+          <div id="camera-error-banner" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md z-30 flex items-center justify-center p-4 hidden">
+            <div class="max-w-xs sm:max-w-md text-center flex flex-col items-center gap-3 bg-[#0d1320] border border-slate-800 rounded-3xl p-5 shadow-2xl">
+              <div class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center text-xl shrink-0">
+                <i class="fa-solid fa-video-slash"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-white">Câmera não acessível</h3>
+                <p class="text-xs text-slate-400 mt-1">Conceda permissão no navegador ou acesse via HTTPS no celular.</p>
+              </div>
+
+              <div class="flex flex-col gap-2 w-full mt-2">
+                <button class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer" onclick="retryWebcam()">
+                  <i class="fa-solid fa-rotate-right"></i> Tentar Novamente
+                </button>
+                <label class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <i class="fa-solid fa-file-image"></i> Usar Envio de Foto
+                  <input type="file" id="file-input-fallback" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- FaceID Reticle Guide Mask -->
+          <div id="face-guide-mask" class="face-guide-mask pointer-events-none z-10">
+            <div class="scanner-reticle relative w-full h-full">
+              <span class="corner top-left border-t-2 border-l-2 border-slate-400"></span>
+              <span class="corner top-right border-t-2 border-r-2 border-slate-400"></span>
+              <span class="corner bottom-left border-b-2 border-l-2 border-slate-400"></span>
+              <span class="corner bottom-right border-b-2 border-r-2 border-slate-400"></span>
+              <div class="scan-laser"></div>
+            </div>
+          </div>
+
+          <!-- Floating Status Badge -->
+          <div id="status-overlay" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-slate-800 backdrop-blur-md rounded-full px-3.5 py-1.5 flex items-center gap-2 w-[92%] max-w-md shadow-2xl z-20 transition-all">
+            <div class="status-icon text-slate-300 text-[11px] shrink-0 flex items-center justify-center">
+              <i class="fa-solid fa-camera"></i>
+            </div>
+            <div id="status-message" class="text-[10px] sm:text-xs font-medium text-white truncate min-w-0 flex-1 text-center tracking-tight">
+              Posicione seu rosto no centro da câmera
+            </div>
+            <div id="alignment-progress" class="w-7 h-1 bg-slate-700/80 rounded-full overflow-hidden shrink-0">
+              <div id="alignment-bar" class="h-full w-0 bg-emerald-400 transition-all duration-200"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Controls & Result Footer -->
+        <div class="p-3 sm:p-4 bg-[#0d1320] flex flex-col gap-2.5 sm:gap-3 border-t border-slate-800/80 box-border w-full">
+          
+          <div class="flex items-center justify-between gap-2 text-xs text-slate-400 w-full flex-wrap">
+            <div class="flex items-center gap-2 min-w-0">
+              <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" id="toggle-landmarks" checked class="sr-only peer">
+                <div class="w-7 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+              <span class="text-[11px] text-slate-300 font-medium truncate">Malha Facial</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button type="button" id="btn-switch-camera" onclick="switchCameraFacingMode()" class="text-[11px] text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700/80 px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer font-semibold transition-all shrink-0" title="Alternar Câmera Frontal/Traseira">
+                <i class="fa-solid fa-camera-rotate text-emerald-400"></i> <span id="camera-facing-label">Frontal</span>
+              </button>
+
+              <label class="text-[11px] text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer font-semibold shrink-0">
+                <i class="fa-solid fa-upload"></i> Enviar Foto
+                <input type="file" id="file-input-main" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
+              </label>
+            </div>
+          </div>
+
+          <!-- COMPACT AUTHENTICATION RESULT DISPLAY (Strictly constrained bounds) -->
+          <div id="result-display" class="w-full bg-[#090d16] border border-slate-800/80 rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2 transition-all duration-300 max-w-full overflow-hidden box-border">
+            <div class="flex items-center justify-between gap-2 min-w-0 w-full">
+              <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                <div id="result-badge-icon" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs shrink-0 shadow-inner">
+                  <i class="fa-solid fa-lock"></i>
+                </div>
+                <div class="flex flex-col min-w-0 flex-1">
+                  <h3 id="result-user-name" class="text-xs sm:text-sm font-bold text-white truncate min-w-0 leading-tight">Aguardando Escaneamento...</h3>
+                  <p id="result-user-role" class="text-[10px] sm:text-xs text-slate-400 truncate min-w-0 leading-tight">Posicione a face diante da câmera</p>
+                </div>
+              </div>
+              <div class="flex flex-col items-end shrink-0 pl-1">
+                <span class="text-[9px] text-slate-400 leading-tight uppercase font-medium">Precisão</span>
+                <strong id="result-match-pct" class="text-xs sm:text-sm font-bold text-emerald-400 leading-tight">0%</strong>
+              </div>
+            </div>
+
+            <div class="w-full h-1.5 bg-slate-800/90 rounded-full overflow-hidden shrink-0">
+              <div id="result-progress-bar" class="h-full bg-emerald-400 transition-all duration-500 w-0"></div>
+            </div>
+            <div class="flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500 min-w-0 w-full">
+              <span id="result-distance-text" class="truncate min-w-0">Distância: -</span>
+              <span class="text-[9px] sm:text-[10px] text-slate-600 shrink-0 font-medium">Ao vivo</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons (Auth Mode) -->
+          <div id="auth-actions" class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+            <button id="btn-scan-auth" class="w-full py-2.5 sm:py-3 px-3 sm:px-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-cyan-600/20 transition-all flex items-center justify-center gap-2 active:scale-95 truncate cursor-pointer" onclick="triggerManualVerification()">
+              <i class="fa-solid fa-expand"></i> Validar Identidade Agora
+            </button>
+            <button id="btn-auto-toggle" class="w-full py-2.5 sm:py-3 px-3 sm:px-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 truncate cursor-pointer" onclick="toggleAutoScan()">
+              <i id="auto-scan-icon" class="fa-solid fa-hand text-cyan-400"></i> Varredura: <strong id="auto-scan-text" class="text-cyan-400 font-bold">Manual</strong>
+            </button>
+          </div>
+
+          <!-- Action Buttons (Register Mode) -->
+          <div id="register-actions" class="grid grid-cols-1 gap-2 hidden w-full">
+            <button id="btn-capture-face" class="w-full py-2.5 sm:py-3 px-3 sm:px-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-cyan-600/20 transition-all flex items-center justify-center gap-2 active:scale-95 truncate cursor-pointer" onclick="captureFaceForRegister()">
+              <i class="fa-solid fa-camera-retro"></i> Capturar Face Atual
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MULTI-LAYER CONTAINER VIEWS -->
+      <div class="w-full">
+
+        <!-- LAYER 1: AUTENTICAÇÃO BIOMÉTRICA -->
+        <section id="view-auth" class="flex flex-col items-center justify-center w-full">
+          <div id="view-auth-camera-slot" class="w-full flex flex-col"></div>
+        </section>
+
+        <!-- LAYER 2: CADASTRAR FACE -->
+        <section id="view-register" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 w-full">
+          <div id="view-register-camera-slot" class="lg:col-span-6 xl:col-span-5 flex flex-col"></div>
+
+          <div class="lg:col-span-6 xl:col-span-7 flex flex-col">
+            <!-- Registration Form Panel -->
+            <div id="panel-register" class="bg-[#0d1320] border border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-4 h-full">
+              <div class="text-sm font-bold text-white flex items-center justify-between border-b border-slate-800/60 pb-3">
+                <span class="flex items-center gap-2.5"><i class="fa-solid fa-id-card text-emerald-400"></i> Cadastro & Atualização de Credencial</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Campos Obrigatórios *</span>
+              </div>
+
+              <!-- Credential Search & Selection for Update -->
+              <div class="relative w-full flex flex-col gap-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <label for="reg-search-credential" class="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-magnifying-glass"></i> Localizar Credencial para Atualização:
+                  </label>
+                  <button type="button" id="btn-reg-new-mode" onclick="clearRegistrationSelection()" class="text-[11px] text-slate-400 hover:text-rose-400 flex items-center gap-1 transition-colors font-semibold hidden">
+                    <i class="fa-solid fa-xmark"></i> Limpar / Novo Cadastro
+                  </button>
+                </div>
+
+                <div class="relative">
+                  <input type="text" id="reg-search-credential" oninput="handleRegisterCredentialSearch(this.value)" placeholder="Buscar colaborador por matrícula, nome ou email..." autocomplete="off" class="w-full bg-[#090d16] border border-slate-700/80 focus:border-cyan-400 rounded-xl pl-9 pr-8 py-2.5 text-xs sm:text-sm text-white outline-none transition-all placeholder:text-slate-500 font-sans">
+                  <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
+                  <button type="button" onclick="clearRegisterSearchInput()" id="btn-clear-search-input" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-xs hidden cursor-pointer">
+                    <i class="fa-solid fa-circle-xmark text-sm"></i>
+                  </button>
+                </div>
+
+                <!-- Autocomplete Dropdown List -->
+                <div id="reg-search-results" class="absolute left-0 right-0 top-full mt-1 bg-[#0d1320] border border-slate-700 rounded-2xl shadow-2xl max-h-60 overflow-y-auto scrollbar-thin z-50 hidden divide-y divide-slate-800/80">
+                  <!-- Populated via JavaScript -->
+                </div>
+              </div>
+
+              <!-- Selected Credential Banner (Update Mode Active) -->
+              <div id="reg-selected-banner" class="hidden flex items-center justify-between gap-3 bg-cyan-500/10 border border-cyan-500/30 p-2.5 sm:p-3 rounded-2xl">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 text-xs font-bold shadow-inner">
+                    <i class="fa-solid fa-user-pen"></i>
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-xs font-bold text-cyan-300 truncate" id="reg-selected-name">Editando: -</span>
+                    <span class="text-[10px] text-slate-400 font-mono truncate" id="reg-selected-meta">Matrícula: -</span>
+                  </div>
+                </div>
+                <button type="button" onclick="clearRegistrationSelection()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] rounded-lg border border-slate-700 font-semibold shrink-0 transition-colors">
+                  Novo Cadastro
+                </button>
+              </div>
+
+              <div class="flex items-center gap-3.5 bg-[#090d16] border border-slate-800/60 p-3 rounded-2xl">
+                <div class="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                  <img id="register-preview-img" src="" alt="Preview da captura" class="w-full h-full object-cover hidden">
+                  <div id="preview-placeholder" class="flex flex-col items-center text-slate-500 text-[10px] text-center">
+                    <i class="fa-solid fa-user-astronaut text-xl mb-0.5"></i>
+                    <span>Sem Foto</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-0.5 min-w-0">
+                  <span id="preview-status" class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-400 w-fit">Aguardando Captura</span>
+                  <small id="preview-desc-info" class="text-xs text-slate-400 truncate">Posicione o rosto e clique em "Capturar Face".</small>
+                </div>
+              </div>
+
+              <form id="form-register-user" onsubmit="handleRegisterSubmit(event)" class="flex flex-col gap-3.5">
+                <input type="hidden" id="reg-editing-user-id" value="">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <!-- Filial (String 4) -->
+                  <div class="flex flex-col gap-1.5">
+                    <label for="reg-branch" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                      <i class="fa-solid fa-building text-slate-500"></i> Filial / Empresa <span class="text-rose-400">*</span>:
+                    </label>
+                    <select id="reg-branch" required class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white outline-none transition-all focus:ring-1 focus:ring-emerald-400 font-mono">
+                      <option value="0101">0101 - Matriz</option>
+                      <option value="0102">0102 - Adoro</option>
+                    </select>
+                  </div>
+
+                  <!-- Matrícula (String 10 - OBIRGATÓRIO!) -->
+                  <div class="flex flex-col gap-1.5">
+                    <label for="reg-registration" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                      <i class="fa-solid fa-id-badge text-emerald-400"></i> Matrícula <span class="text-rose-400">*</span> (Máx 10):
+                    </label>
+                    <input type="text" id="reg-registration" maxlength="10" placeholder="Ex: 00012345" required autocomplete="off" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white outline-none transition-all focus:ring-1 focus:ring-emerald-400 font-mono">
+                  </div>
+                </div>
+
+                <!-- Nome Completo (OBRIGATÓRIO) & Email -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div class="flex flex-col gap-1.5">
+                    <label for="reg-name" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                      <i class="fa-solid fa-user text-slate-500"></i> Nome Completo <span class="text-rose-400">*</span>:
+                    </label>
+                    <input type="text" id="reg-name" placeholder="Ex: Leonardo Monteiro" required autocomplete="off" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white outline-none transition-all focus:ring-1 focus:ring-emerald-400">
+                  </div>
+
+                  <div class="flex flex-col gap-1.5">
+                    <label for="reg-email" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                      <i class="fa-solid fa-envelope text-slate-500"></i> Email:
+                    </label>
+                    <input type="email" id="reg-email" placeholder="Ex: leonardo@empresa.com.br" autocomplete="off" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white outline-none transition-all focus:ring-1 focus:ring-emerald-400">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <!-- Departamento -->
+                  <div class="flex flex-col gap-1.5">
+                    <label for="reg-department" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                      <i class="fa-solid fa-sitemap text-slate-500"></i> Departamento:
+                    </label>
+                    <input type="text" id="reg-department" placeholder="Ex: Engenharia de Software" autocomplete="off" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white outline-none transition-all focus:ring-1 focus:ring-emerald-400">
+                  </div>
+
+                  <!-- Função / Cargo -->
+                  <div class="flex flex-col gap-1.5">
+                    <label for="reg-role" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                      <i class="fa-solid fa-briefcase text-slate-500"></i> Função / Cargo:
+                    </label>
+                    <input type="text" id="reg-role" placeholder="Ex: Desenvolvedor Senior" required autocomplete="off" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white outline-none transition-all focus:ring-1 focus:ring-emerald-400">
+                  </div>
+                </div>
+
+                <button type="submit" id="btn-submit-register" disabled class="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed mt-1 cursor-pointer">
+                  <i class="fa-solid fa-user-check"></i> Salvar Credencial Facial
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- LAYER 3: CREDENCIAIS BIOMÉTRICAS (FULL WIDTH RESPONSIVE DATA GRID) -->
+        <section id="view-credentials" class="hidden w-full max-w-full">
+          <div id="panel-credentials" class="bg-[#0d1320] border border-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 w-full">
+            <div class="text-sm font-bold text-white flex items-center justify-between border-b border-slate-800/60 pb-3 flex-wrap gap-2">
+              <span class="flex items-center gap-2.5 text-sm sm:text-base">
+                <i class="fa-solid fa-id-card text-emerald-400"></i> Gestão de Credenciais Biométricas
+              </span>
+              <div class="flex items-center gap-2">
+                <span id="credentials-counter-badge" class="px-3 py-1 bg-slate-800 text-slate-300 border border-slate-700 rounded-full text-xs font-semibold">0 Credenciais</span>
+                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-semibold">PostgreSQL Ativo</span>
+              </div>
+            </div>
+
+            <!-- Search & Status Filter Toolbar -->
+            <div class="flex flex-col sm:flex-row gap-3 w-full items-center justify-between">
+              <div class="relative w-full sm:flex-1">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                <input type="text" id="cred-search-input" placeholder="Pesquisar por nome, matrícula, filial, departamento ou cargo..." oninput="filterCredentials()" class="w-full bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-white outline-none transition-all focus:ring-1 focus:ring-emerald-400">
+              </div>
+
+              <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                <select id="cred-filter-status" onchange="filterCredentials()" class="bg-[#090d16] border border-slate-800 text-xs text-slate-300 rounded-xl px-3 py-2.5 outline-none focus:border-emerald-400">
+                  <option value="all">Todos os Status</option>
+                  <option value="active">Somente Ativos</option>
+                  <option value="blocked">Somente Bloqueados</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Full Width Responsive Grid View (Taking 100% Screen Space!) -->
+            <div id="credentials-full-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[70vh] overflow-y-auto pr-1 scrollbar-thin w-full">
+              <div class="col-span-full flex flex-col items-center justify-center p-12 text-slate-500 gap-2">
+                <i class="fa-solid fa-id-badge text-4xl mb-1 text-slate-600"></i>
+                <p class="text-sm font-medium">Nenhuma credencial biométrica cadastrada.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LAYER 4: STATUS DO SISTEMA -->
+        <section id="view-status" class="hidden max-w-3xl mx-auto w-full">
+          <div id="panel-status" class="bg-[#0d1320] border border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-4">
+            <div class="text-sm font-bold text-white flex items-center justify-between border-b border-slate-800/60 pb-3">
+              <span class="flex items-center gap-2.5"><i class="fa-solid fa-sliders text-emerald-400"></i> Status do Sistema</span>
+              <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-semibold">Online</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+              <div class="flex items-center justify-between bg-[#090d16] border border-slate-800/60 rounded-2xl p-4">
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-microchip text-emerald-400 text-base"></i>
+                  <span class="text-xs text-slate-300 font-medium">Modelos Neurais</span>
+                </div>
+                <span id="model-status" class="text-xs font-semibold text-amber-400 flex items-center gap-1">
+                  <i class="fa-solid fa-spinner fa-spin"></i>
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between bg-[#090d16] border border-slate-800/60 rounded-2xl p-4">
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-video text-emerald-400 text-base"></i>
+                  <span class="text-xs text-slate-300 font-medium">Câmera Biométrica</span>
+                </div>
+                <span id="camera-status" class="text-xs font-semibold text-amber-400">Iniciando</span>
+              </div>
+
+              <div class="flex items-center justify-between bg-[#090d16] border border-slate-800/60 rounded-2xl p-4">
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-users text-emerald-400 text-base"></i>
+                  <span class="text-xs text-slate-300 font-medium">Base de Usuários</span>
+                </div>
+                <span id="users-count" class="text-xs font-semibold text-emerald-400">0</span>
+              </div>
+            </div>
+
+            <div class="bg-[#090d16] border border-slate-800/60 rounded-2xl p-4 flex flex-col gap-3 text-xs text-slate-400 mt-1">
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-server text-slate-500"></i> Servidor de Aplicação:</span>
+                <span class="text-slate-200 font-mono text-xs">Node.js (HTTP :3000 / HTTPS :3443)</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-database text-slate-500"></i> Banco de Dados:</span>
+                <span class="text-slate-200 font-mono text-xs">PostgreSQL (Docker :5433)</span>
+              </div>
+              <div class="flex justify-between items-center py-1.5">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-slate-500"></i> Segurança & Log:</span>
+                <span class="text-slate-200 font-mono text-xs">DevSecOps • Dual Logging (5 min)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LAYER 5: HISTÓRICO DE AUDITORIA & BANCO DE DADOS -->
+        <section id="view-audit" class="hidden w-full">
+          <div id="section-audit" class="bg-[#0d1320] border border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-4">
+            
+            <!-- Audit Header + Sub-Tab Navigation -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-4">
+              <div class="flex items-center gap-2 bg-[#090d16] p-1.5 rounded-2xl border border-slate-800/80">
+                <button id="btn-subtab-access" onclick="switchAuditSubTab('access')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-2">
+                  <i class="fa-solid fa-clock-rotate-left"></i> Histórico de Acessos
+                </button>
+                <button id="btn-subtab-db" onclick="switchAuditSubTab('db')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white flex items-center gap-2">
+                  <i class="fa-solid fa-database text-emerald-400"></i> Auditoria de Alterações (Banco)
+                </button>
+              </div>
+
+              <span class="px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0" title="Histórico de auditoria é imutável por conformidade de segurança">
+                <i class="fa-solid fa-shield-halved text-xs"></i> Histórico Protegido (Imutável)
+              </span>
+            </div>
+
+            <!-- SUB-TAB 1: Access Logs Container -->
+            <div id="container-audit-access" class="flex flex-col gap-3.5 w-full">
+              
+              <!-- Header Filter & Export Toolbar for Access Logs -->
+              <div class="bg-[#090d16] border border-slate-800/80 rounded-2xl p-3 sm:p-4 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3 shadow-inner">
+                
+                <!-- Left Filter Inputs Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 flex-1">
+                  
+                  <!-- 1. Status Filter -->
+                  <div class="flex flex-col gap-1">
+                    <label for="audit-filter-status" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-filter text-emerald-400"></i> Status
+                    </label>
+                    <select id="audit-filter-status" onchange="filterAccessLogs()" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-emerald-400 transition-colors">
+                      <option value="all">Todos os Status</option>
+                      <option value="success">Acesso Concedido</option>
+                      <option value="denied">Acesso Negado</option>
+                    </select>
+                  </div>
+
+                  <!-- 2. Start Date & Time Filter -->
+                  <div class="flex flex-col gap-1">
+                    <label for="audit-filter-start-datetime" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-calendar-day text-emerald-400"></i> Data/Hora Inicial
+                    </label>
+                    <input type="datetime-local" id="audit-filter-start-datetime" onchange="filterAccessLogs()" oninput="filterAccessLogs()" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-xl px-2.5 py-2 outline-none focus:border-emerald-400 transition-colors">
+                  </div>
+
+                  <!-- 3. End Date & Time Filter -->
+                  <div class="flex flex-col gap-1">
+                    <label for="audit-filter-end-datetime" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-calendar-check text-emerald-400"></i> Data/Hora Final
+                    </label>
+                    <input type="datetime-local" id="audit-filter-end-datetime" onchange="filterAccessLogs()" oninput="filterAccessLogs()" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-xl px-2.5 py-2 outline-none focus:border-emerald-400 transition-colors">
+                  </div>
+
+                  <!-- 4. Matrícula / Colaborador Filter -->
+                  <div class="flex flex-col gap-1">
+                    <label for="audit-filter-reg" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-id-card-clip text-emerald-400"></i> Matrícula / Nome
+                    </label>
+                    <div class="relative">
+                      <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[10px]"></i>
+                      <input type="text" id="audit-filter-reg" oninput="filterAccessLogs()" onkeydown="if(event.key==='Enter')searchAccessLogs()" placeholder="Buscar usuário..." class="w-full bg-[#0d1320] border border-slate-800 focus:border-emerald-400 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-200 outline-none transition-all">
+                    </div>
+                  </div>
+
+                  <!-- 5. Filial Filter -->
+                  <div class="flex flex-col gap-1">
+                    <label for="audit-filter-branch" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-building text-emerald-400"></i> Filial
+                    </label>
+                    <select id="audit-filter-branch" onchange="filterAccessLogs()" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-emerald-400 transition-colors">
+                      <option value="all">Todas as Filiais</option>
+                    </select>
+                  </div>
+
+                </div>
+
+                <!-- Right Actions & Counters -->
+                <div class="flex items-center justify-between xl:justify-end gap-2 pt-2 xl:pt-0 border-t xl:border-t-0 border-slate-800/60 shrink-0 flex-wrap">
+                  <span id="audit-filter-count-badge" class="px-3 py-2 bg-[#0d1320] border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-400">
+                    0 registros
+                  </span>
+                  
+                  <button type="button" onclick="searchAccessLogs()" class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-1.5 cursor-pointer" title="Pesquisar e atualizar registros">
+                    <i class="fa-solid fa-magnifying-glass"></i> Pesquisar
+                  </button>
+
+                  <button type="button" onclick="clearAuditAccessFilters()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold border border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer" title="Limpar Filtros">
+                    <i class="fa-solid fa-rotate-left text-slate-400"></i> Limpar
+                  </button>
+
+                  <button type="button" onclick="exportAccessLogsToExcel()" class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-2 cursor-pointer btn-export-excel" title="Exportar todos os logs filtrados para Excel">
+                    <i class="fa-solid fa-file-excel text-sm"></i> Exportar Excel
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Table with Overflow Scroll -->
+              <div class="overflow-x-auto scrollbar-thin w-full">
+                <table class="w-full text-left text-xs text-slate-300 whitespace-nowrap">
+                  <thead>
+                    <tr class="bg-[#090d16] text-slate-400 uppercase text-[10px] tracking-wider rounded-xl border border-slate-800/60">
+                      <th class="p-3 rounded-l-xl">Captura</th>
+                      <th class="p-3">Data & Hora</th>
+                      <th class="p-3">Filial</th>
+                      <th class="p-3">Matrícula</th>
+                      <th class="p-3">Usuário</th>
+                      <th class="p-3">Precisão</th>
+                      <th class="p-3">Distância</th>
+                      <th class="p-3">Status do Acesso</th>
+                      <th class="p-3 text-right rounded-r-xl">Detalhes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="logs-table-body" class="divide-y divide-slate-800/40">
+                    <tr>
+                      <td colspan="9" class="text-center py-6 text-slate-500 text-xs">Nenhum log de acesso gravado.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Access Logs Pagination Bar -->
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#090d16] border border-slate-800/80 rounded-2xl p-3 sm:px-4 text-xs shadow-inner">
+                <div class="flex items-center gap-3 text-slate-400">
+                  <span id="access-page-info" class="font-medium text-slate-300">Mostrando 0 de 0 registros</span>
+                  <span class="text-slate-600 hidden sm:inline">|</span>
+                  <div class="flex items-center gap-1.5">
+                    <span>Por página:</span>
+                    <select id="access-page-size" onchange="changeAccessLogsPageSize(this.value)" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-lg px-2 py-1 outline-none focus:border-emerald-400 transition-colors">
+                      <option value="10" selected>10</option>
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="access-pagination-controls" class="flex items-center gap-1 flex-wrap justify-center">
+                  <!-- Pagination buttons dynamically rendered via JS -->
+                </div>
+              </div>
+
+            </div>
+
+            <!-- SUB-TAB 2: System / DB Alterations Audit Log Table -->
+            <div id="container-audit-db" class="flex flex-col gap-3.5 w-full hidden">
+              
+              <!-- Header Filter & Export Toolbar for DB Alterations Logs -->
+              <div class="bg-[#090d16] border border-slate-800/80 rounded-2xl p-3 sm:p-4 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3 shadow-inner">
+                
+                <!-- Left Filter Inputs Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 flex-1">
+                  
+                  <!-- 1. Action Filter -->
+                  <div class="flex flex-col gap-1">
+                    <label for="db-filter-action" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-filter text-emerald-400"></i> Ação Executada
+                    </label>
+                    <select id="db-filter-action" onchange="filterDbLogs()" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-emerald-400 transition-colors">
+                      <option value="all">Todas as Ações</option>
+                      <option value="USER_CREATE">Novo Cadastro (USER_CREATE)</option>
+                      <option value="USER_UPDATE">Atualização (USER_UPDATE)</option>
+                      <option value="USER_BLOCK">Bloqueio (USER_BLOCK)</option>
+                      <option value="USER_UNBLOCK">Desbloqueio (USER_UNBLOCK)</option>
+                      <option value="USER_BLOCKED_ACCESS">Tentativa Bloqueada (USER_BLOCKED_ACCESS)</option>
+                      <option value="USER_DELETE">Exclusão (USER_DELETE)</option>
+                    </select>
+                  </div>
+
+                  <!-- 2. Start Date & Time Filter -->
+                  <div class="flex flex-col gap-1">
+                    <label for="db-filter-start-datetime" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-calendar-day text-emerald-400"></i> Data/Hora Inicial
+                    </label>
+                    <input type="datetime-local" id="db-filter-start-datetime" onchange="filterDbLogs()" oninput="filterDbLogs()" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-xl px-2.5 py-2 outline-none focus:border-emerald-400 transition-colors">
+                  </div>
+
+                  <!-- 3. End Date & Time Filter -->
+                  <div class="flex flex-col gap-1">
+                    <label for="db-filter-end-datetime" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-calendar-check text-emerald-400"></i> Data/Hora Final
+                    </label>
+                    <input type="datetime-local" id="db-filter-end-datetime" onchange="filterDbLogs()" oninput="filterDbLogs()" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-xl px-2.5 py-2 outline-none focus:border-emerald-400 transition-colors">
+                  </div>
+
+                  <!-- 4. Filial Filter -->
+                  <div class="flex flex-col gap-1">
+                    <label for="db-filter-branch" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-building text-emerald-400"></i> Filial
+                    </label>
+                    <select id="db-filter-branch" onchange="filterDbLogs()" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-emerald-400 transition-colors">
+                      <option value="all">Todas as Filiais</option>
+                    </select>
+                  </div>
+
+                  <!-- 5. Search text -->
+                  <div class="flex flex-col gap-1">
+                    <label for="db-filter-search" class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
+                      <i class="fa-solid fa-magnifying-glass text-emerald-400"></i> Mensagem / Matrícula
+                    </label>
+                    <input type="text" id="db-filter-search" oninput="filterDbLogs()" onkeydown="if(event.key==='Enter')searchDbLogs()" placeholder="Pesquisar registro..." class="w-full bg-[#0d1320] border border-slate-800 focus:border-emerald-400 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none transition-all">
+                  </div>
+
+                </div>
+
+                <!-- Right Actions & Counters -->
+                <div class="flex items-center justify-between xl:justify-end gap-2 pt-2 xl:pt-0 border-t xl:border-t-0 border-slate-800/60 shrink-0 flex-wrap">
+                  <span id="db-filter-count-badge" class="px-3 py-2 bg-[#0d1320] border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-400">
+                    0 registros
+                  </span>
+                  
+                  <button type="button" onclick="searchDbLogs()" class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-1.5 cursor-pointer" title="Pesquisar e atualizar registros de auditoria">
+                    <i class="fa-solid fa-magnifying-glass"></i> Pesquisar
+                  </button>
+
+                  <button type="button" onclick="clearDbLogsFilters()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold border border-slate-700 transition-all flex items-center gap-1.5 cursor-pointer" title="Limpar Filtros">
+                    <i class="fa-solid fa-rotate-left text-slate-400"></i> Limpar
+                  </button>
+
+                  <button type="button" onclick="exportDbLogsToExcel()" class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-2 cursor-pointer btn-export-excel" title="Exportar registros de auditoria para Excel">
+                    <i class="fa-solid fa-file-excel text-sm"></i> Exportar Excel
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Table with Overflow Scroll -->
+              <div class="overflow-x-auto scrollbar-thin w-full">
+                <table class="w-full text-left text-xs text-slate-300 whitespace-nowrap">
+                  <thead>
+                    <tr class="bg-[#090d16] text-slate-400 uppercase text-[10px] tracking-wider rounded-xl border border-slate-800/60">
+                      <th class="p-3 rounded-l-xl">Data & Hora</th>
+                      <th class="p-3">Filial</th>
+                      <th class="p-3">Ação</th>
+                      <th class="p-3">Mensagem / Alteração</th>
+                      <th class="p-3">Matrícula / ID</th>
+                      <th class="p-3 rounded-r-xl">IP Cliente</th>
+                    </tr>
+                  </thead>
+                  <tbody id="system-logs-table-body" class="divide-y divide-slate-800/40">
+                    <tr>
+                      <td colspan="6" class="text-center py-6 text-slate-500 text-xs">Nenhum registro de auditoria do banco encontrado.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- DB Logs Pagination Bar -->
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#090d16] border border-slate-800/80 rounded-2xl p-3 sm:px-4 text-xs shadow-inner">
+                <div class="flex items-center gap-3 text-slate-400">
+                  <span id="db-page-info" class="font-medium text-slate-300">Mostrando 0 de 0 registros</span>
+                  <span class="text-slate-600 hidden sm:inline">|</span>
+                  <div class="flex items-center gap-1.5">
+                    <span>Por página:</span>
+                    <select id="db-page-size" onchange="changeDbLogsPageSize(this.value)" class="bg-[#0d1320] border border-slate-800 text-xs text-slate-200 rounded-lg px-2 py-1 outline-none focus:border-emerald-400 transition-colors">
+                      <option value="10" selected>10</option>
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="db-pagination-controls" class="flex items-center gap-1 flex-wrap justify-center">
+                  <!-- Pagination buttons dynamically rendered via JS -->
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- LAYER 6: GESTÃO DE OPERADORES DO SISTEMA & DIREITOS DE ACESSO -->
+        <section id="view-system-users" class="hidden w-full">
+          <div class="bg-[#0d1320] border border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-5">
+            
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-4">
+              <div>
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-user-shield text-emerald-400"></i> Operadores do Sistema & Direitos de Acesso
+                </h3>
+                <p class="text-xs text-slate-400">Cadastre operadores e configure permissões de acesso às opções do menu</p>
+              </div>
+
+              <button onclick="openSystemUserModal()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-user-plus"></i> Novo Operador
+              </button>
+            </div>
+
+            <div class="overflow-x-auto scrollbar-thin w-full">
+              <table class="w-full text-left text-xs text-slate-300 whitespace-nowrap">
+                <thead>
+                  <tr class="bg-[#090d16] text-slate-400 uppercase text-[10px] tracking-wider rounded-xl border border-slate-800/60">
+                    <th class="p-3 rounded-l-xl">Operador / Nome</th>
+                    <th class="p-3">Login</th>
+                    <th class="p-3">Perfil</th>
+                    <th class="p-3">Direitos de Menu</th>
+                    <th class="p-3">Criado Em</th>
+                    <th class="p-3 text-right rounded-r-xl">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="system-users-table-body" class="divide-y divide-slate-800/40">
+                  <tr>
+                    <td colspan="6" class="text-center py-6 text-slate-500 text-xs">Carregando operadores...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- LAYER 7: GESTÃO DE PERFIS & GRUPOS DE ACESSO -->
+        <section id="view-profiles" class="hidden w-full">
+          <div class="bg-[#0d1320] border border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-5">
+            
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-4">
+              <div>
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-users-gear text-cyan-400"></i> Perfis & Grupos de Acesso
+                </h3>
+                <p class="text-xs text-slate-400">Cadastre grupos de acesso e defina as permissões que os usuários associados herdarão</p>
+              </div>
+
+              <button onclick="openProfileModal()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-plus"></i> Novo Perfil / Grupo
+              </button>
+            </div>
+
+            <div class="overflow-x-auto scrollbar-thin w-full">
+              <table class="w-full text-left text-xs text-slate-300 whitespace-nowrap">
+                <thead>
+                  <tr class="bg-[#090d16] text-slate-400 uppercase text-[10px] tracking-wider rounded-xl border border-slate-800/60">
+                    <th class="p-3 rounded-l-xl">Cód. Grupo</th>
+                    <th class="p-3">Perfil / Grupo</th>
+                    <th class="p-3">Descrição</th>
+                    <th class="p-3">Direitos Herdados</th>
+                    <th class="p-3">Tipo</th>
+                    <th class="p-3 text-right rounded-r-xl">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="profiles-table-body" class="divide-y divide-slate-800/40">
+                  <tr>
+                    <td colspan="5" class="text-center py-6 text-slate-500 text-xs">Carregando perfis...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- LAYER 8: GESTÃO DE EMPRESAS & FILIAIS -->
+        <section id="view-branches" class="hidden w-full">
+          <div class="bg-[#0d1320] border border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-5">
+            
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-4">
+              <div>
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-building text-cyan-400"></i> Cadastro de Empresas / Filiais
+                </h3>
+                <p class="text-xs text-slate-400">Cadastre e gerencie as unidades e filiais da empresa para amarração com os usuários e coletas</p>
+              </div>
+
+              <button onclick="openBranchModal()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-plus"></i> Nova Empresa / Filial
+              </button>
+            </div>
+
+            <div class="overflow-x-auto scrollbar-thin w-full">
+              <table class="w-full text-left text-xs text-slate-300 whitespace-nowrap">
+                <thead>
+                  <tr class="bg-[#090d16] text-slate-400 uppercase text-[10px] tracking-wider rounded-xl border border-slate-800/60">
+                    <th class="p-3 rounded-l-xl">Código Filial</th>
+                    <th class="p-3">Razão Social / Nome Fantasia</th>
+                    <th class="p-3">CNPJ</th>
+                    <th class="p-3">Status</th>
+                    <th class="p-3 text-right rounded-r-xl">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="branches-table-body" class="divide-y divide-slate-800/40">
+                  <tr>
+                    <td colspan="5" class="text-center py-6 text-slate-500 text-xs">Carregando filiais...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal de Detalhes do Log de Auditoria / Coleta Biométrica -->
+  <!-- Modal de Detalhes do Log de Auditoria / Coleta Biométrica (80% Largura x 90% Altura) -->
+  <div id="modal-log-details" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0d1320] border border-slate-800 rounded-3xl p-5 sm:p-8 w-[95vw] md:w-[80vw] max-w-[80vw] h-[90vh] max-h-[90vh] shadow-2xl flex flex-col justify-between overflow-hidden">
+      
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800/60 pb-3 sm:pb-4 shrink-0">
+        <h3 class="text-sm sm:text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-id-card text-emerald-400"></i> Detalhes da Coleta Biométrica & Auditoria
+        </h3>
+        <button onclick="closeLogDetailsModal()" class="text-slate-400 hover:text-rose-400 transition-colors text-base p-1.5 rounded-xl hover:bg-slate-800" title="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Body / Two-Column Responsive Layout -->
+      <div class="flex-1 overflow-y-auto pr-1 sm:pr-2 scrollbar-thin grid grid-cols-1 lg:grid-cols-12 gap-6 py-4 items-start">
+        
+        <!-- Left Col: Captured Image Preview -->
+        <div class="lg:col-span-5 flex flex-col items-center justify-center">
+          <div class="relative w-full aspect-square max-h-[440px] bg-black rounded-2xl overflow-hidden border border-slate-700/80 shadow-2xl flex items-center justify-center">
+            <img id="detail-log-image" src="" alt="Imagem Coletada" class="w-full h-full object-contain">
+            <span id="detail-log-status-badge" class="absolute top-3 right-3 px-3.5 py-1.5 rounded-full text-xs font-bold border shadow-lg backdrop-blur-md">
+              -
+            </span>
+          </div>
+        </div>
+
+        <!-- Right Col: Structured Metadata Grid -->
+        <div class="lg:col-span-7 flex flex-col gap-3.5 bg-[#090d16] p-5 rounded-2xl border border-slate-800/80 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div class="flex flex-col gap-0.5">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Data & Hora da Coleta</span>
+              <span id="detail-log-timestamp" class="text-xs sm:text-sm font-mono font-bold text-slate-200 truncate">-</span>
+            </div>
+
+            <div class="flex flex-col gap-0.5">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Status do Acesso</span>
+              <span id="detail-log-statustext" class="text-xs sm:text-sm font-bold text-slate-300 truncate">-</span>
+            </div>
+
+            <div class="flex flex-col gap-0.5">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Filial</span>
+              <span id="detail-log-branch" class="text-xs sm:text-sm font-mono font-bold text-slate-200 truncate">-</span>
+            </div>
+
+            <div class="flex flex-col gap-0.5">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Matrícula</span>
+              <span id="detail-log-registration" class="text-xs sm:text-sm font-mono font-bold text-emerald-400 truncate">-</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-0.5 border-t border-slate-800/60 pt-3">
+            <span class="text-[10px] text-slate-500 uppercase font-semibold">Usuário Reconhecido</span>
+            <span id="detail-log-username" class="text-base font-bold text-white truncate">-</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 border-t border-slate-800/60 pt-3">
+            <div class="flex flex-col gap-0.5">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Precisão Biométrica</span>
+              <span id="detail-log-matchpct" class="text-sm font-bold text-cyan-400 truncate">-</span>
+            </div>
+
+            <div class="flex flex-col gap-0.5">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Distância Euclidiana</span>
+              <span id="detail-log-distance" class="text-xs sm:text-sm font-mono text-slate-400 truncate">-</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-0.5 border-t border-slate-800/60 pt-3">
+            <span class="text-[10px] text-slate-500 uppercase font-semibold">ID do Registro</span>
+            <span id="detail-log-id" class="text-[11px] font-mono text-slate-500 truncate">-</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end pt-3 sm:pt-4 border-t border-slate-800/60 shrink-0">
+        <button onclick="closeLogDetailsModal()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold rounded-xl transition-all">
+          Fechar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal de Edição de Credencial (80% Largura x 90% Altura) -->
+  <div id="modal-edit-credential" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0d1320] border border-slate-800 rounded-3xl p-5 sm:p-8 w-[95vw] md:w-[80vw] max-w-[80vw] h-[90vh] max-h-[90vh] shadow-2xl flex flex-col justify-between overflow-hidden">
+      
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800/60 pb-3 sm:pb-4 shrink-0">
+        <h3 class="text-sm sm:text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-emerald-400"></i> Editar Credencial Biométrica
+        </h3>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-rose-400 transition-colors text-base p-1.5 rounded-xl hover:bg-slate-800" title="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Form Body with Scrollable Area -->
+      <form id="form-edit-credential" onsubmit="saveEditedCredential(event)" class="flex-1 flex flex-col justify-between overflow-hidden gap-4 py-2">
+        <input type="hidden" id="edit-cred-id">
+
+        <div class="flex-1 overflow-y-auto pr-1 sm:pr-2 scrollbar-thin flex flex-col gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Filial / Empresa <span class="text-rose-400">*</span>:</label>
+              <select id="edit-cred-branch" required class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-emerald-400 font-mono">
+                <option value="0101">0101 - Matriz</option>
+                <option value="0102">0102 - Adoro</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Matrícula <span class="text-rose-400">*</span> (Máx 10):</label>
+              <input type="text" id="edit-cred-registration" maxlength="10" required class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-emerald-400 font-mono">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Nome Completo <span class="text-rose-400">*</span>:</label>
+              <input type="text" id="edit-cred-name" required class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-emerald-400">
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Email:</label>
+              <input type="email" id="edit-cred-email" placeholder="Ex: leonardo@empresa.com.br" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-emerald-400">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Departamento:</label>
+              <input type="text" id="edit-cred-department" placeholder="Ex: Engenharia de Software" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-emerald-400">
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Função / Cargo <span class="text-rose-400">*</span>:</label>
+              <input type="text" id="edit-cred-role" required placeholder="Ex: Desenvolvedor" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-emerald-400">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between bg-[#090d16] border border-slate-800 rounded-2xl p-4 mt-1">
+            <div class="flex flex-col">
+              <span class="text-xs sm:text-sm font-semibold text-slate-300 flex items-center gap-2">
+                <i class="fa-solid fa-user-lock text-slate-400"></i> Bloqueio de Acesso Biométrico
+              </span>
+              <small class="text-[11px] text-slate-500">Quando bloqueado, tentativas de acesso deste colaborador serão negadas.</small>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="edit-cred-blocked" class="sr-only peer" onchange="updateEditBlockedLabel(this.checked)">
+              <div class="w-11 h-6 bg-emerald-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
+              <span id="edit-cred-blocked-label" class="ml-2.5 text-xs sm:text-sm font-bold text-emerald-400">Ativo</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 pt-3 sm:pt-4 border-t border-slate-800/60 shrink-0">
+          <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer">Cancelar</button>
+          <button type="submit" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-600/20 transition-all cursor-pointer">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Cadastro / Edição de Perfil / Grupo de Acesso (80% Largura x 90% Altura) -->
+  <div id="modal-profile" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0d1320] border border-slate-800 rounded-3xl p-5 sm:p-8 w-[95vw] md:w-[80vw] max-w-[80vw] h-[90vh] max-h-[90vh] shadow-2xl flex flex-col justify-between overflow-hidden">
+      
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800/60 pb-3 sm:pb-4 shrink-0">
+        <h3 id="modal-profile-title" class="text-sm sm:text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-users-gear text-emerald-400"></i> Cadastrar Perfil / Grupo de Acesso
+        </h3>
+        <button onclick="closeProfileModal()" class="text-slate-400 hover:text-rose-400 transition-colors text-base p-1.5 rounded-xl hover:bg-slate-800" title="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Form Body with Scrollable Area -->
+      <form id="form-profile" onsubmit="saveProfile(event)" class="flex-1 flex flex-col justify-between overflow-hidden gap-4 py-2">
+        <input type="hidden" id="profile-id">
+
+        <div class="flex-1 overflow-y-auto pr-1 sm:pr-2 scrollbar-thin flex flex-col gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Código do Grupo <span class="text-rose-400">*</span>:</label>
+              <input type="text" id="profile-code" required maxlength="20" placeholder="ex: ADM, PORT" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-emerald-400 font-mono uppercase">
+            </div>
+
+            <div class="sm:col-span-2 flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Nome do Perfil / Grupo <span class="text-rose-400">*</span>:</label>
+              <input type="text" id="profile-name" required placeholder="ex: Operadores de Portaria" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-emerald-400">
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-slate-300">Descrição:</label>
+            <input type="text" id="profile-description" placeholder="ex: Permissão para leitura biométrica e cadastro" class="bg-[#090d16] border border-slate-800 focus:border-emerald-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-emerald-400">
+          </div>
+
+          <!-- PERMISSÕES HERDADAS PELOS USUÁRIOS DO GRUPO -->
+          <div class="flex flex-col gap-3 bg-[#090d16] p-4 sm:p-5 rounded-2xl border border-slate-800/80">
+            <span class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-key text-cyan-400"></i> Privilégios Concedidos aos Usuários do Grupo:
+            </span>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300 mt-1">
+              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:border-emerald-500/40 hover:text-white transition-all">
+                <input type="checkbox" id="prf-perm-auth" class="prf-perm-checkbox accent-emerald-500 rounded"> Autenticação Biométrica
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:border-emerald-500/40 hover:text-white transition-all">
+                <input type="checkbox" id="prf-perm-register" class="prf-perm-checkbox accent-emerald-500 rounded"> Cadastrar Nova Face
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:border-emerald-500/40 hover:text-white transition-all">
+                <input type="checkbox" id="prf-perm-credentials" class="prf-perm-checkbox accent-emerald-500 rounded"> Credenciais
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:border-emerald-500/40 hover:text-white transition-all">
+                <input type="checkbox" id="prf-perm-status" class="prf-perm-checkbox accent-emerald-500 rounded"> Status do Sistema
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:border-emerald-500/40 hover:text-white transition-all">
+                <input type="checkbox" id="prf-perm-audit" class="prf-perm-checkbox accent-emerald-500 rounded"> Histórico de Auditoria
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:border-emerald-500/40 hover:text-white transition-all">
+                <input type="checkbox" id="prf-perm-system_users" class="prf-perm-checkbox accent-emerald-500 rounded"> Usuários do Sistema
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:border-emerald-500/40 hover:text-white transition-all">
+                <input type="checkbox" id="prf-perm-profiles" class="prf-perm-checkbox accent-emerald-500 rounded"> Perfis & Grupos
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:border-emerald-500/40 hover:text-white transition-all">
+                <input type="checkbox" id="prf-perm-branches" class="prf-perm-checkbox accent-emerald-500 rounded"> Empresas / Filiais
+              </label>
+            </div>
+          </div>
+
+          <!-- DIREITO DE ACESSO ÀS FILIAIS -->
+          <div class="flex flex-col gap-3 bg-[#090d16] p-4 sm:p-5 rounded-2xl border border-slate-800/80">
+            <span class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-building text-amber-400"></i> Direito de Acesso às Filiais:
+            </span>
+            <div id="prf-branches-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-xs text-slate-300 mt-1 max-h-44 overflow-y-auto scrollbar-thin">
+              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-slate-800/60 cursor-pointer hover:border-amber-500/40 hover:text-white transition-all">
+                <input type="checkbox" value="*" class="prf-branch-checkbox accent-emerald-500 rounded" checked> Todas as Filiais (*)
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 pt-3 sm:pt-4 border-t border-slate-800/60 shrink-0">
+          <button type="button" onclick="closeProfileModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer">Cancelar</button>
+          <button type="submit" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-600/20 transition-all cursor-pointer">Salvar Perfil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Cadastro / Edição de Usuário do Sistema (80% Largura x 90% Altura) -->
+  <div id="modal-system-user" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0d1320] border border-slate-800 rounded-3xl p-5 sm:p-8 w-[95vw] md:w-[80vw] max-w-[80vw] h-[90vh] max-h-[90vh] shadow-2xl flex flex-col justify-between overflow-hidden">
+      
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800/60 pb-3 sm:pb-4 shrink-0">
+        <h3 id="modal-system-user-title" class="text-sm sm:text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-user-gear text-cyan-400"></i> Cadastrar Usuário do Sistema
+        </h3>
+        <button onclick="closeSystemUserModal()" class="text-slate-400 hover:text-rose-400 transition-colors text-base p-1.5 rounded-xl hover:bg-slate-800" title="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Form Body with Scrollable Area -->
+      <form id="form-system-user" onsubmit="saveSystemUser(event)" class="flex-1 flex flex-col justify-between overflow-hidden gap-4 py-2">
+        <input type="hidden" id="sysuser-id">
+
+        <div class="flex-1 overflow-y-auto pr-1 sm:pr-2 scrollbar-thin flex flex-col gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Login / Usuário <span class="text-rose-400">*</span>:</label>
+              <input type="text" id="sysuser-username" required placeholder="ex: operador1" class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400">
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Perfil / Grupo de Acesso <span class="text-rose-400">*</span>:</label>
+              <select id="sysuser-profileId" required class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400">
+                <option value="">Carregando perfis...</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Empresa / Filial <span class="text-rose-400">*</span>:</label>
+              <select id="sysuser-branch" required class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400">
+                <option value="0101">0101 - Matriz</option>
+                <option value="0102">0102 - Adoro</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Nome Completo <span class="text-rose-400">*</span>:</label>
+              <input type="text" id="sysuser-name" required placeholder="ex: João Silva" class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400">
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Email do Usuário:</label>
+              <input type="email" id="sysuser-email" placeholder="joao.silva@empresa.com.br" class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Senha de Acesso <span id="sysuser-password-req" class="text-rose-400">*</span>:</label>
+              <input type="password" id="sysuser-password" placeholder="Digite a senha" class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400">
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Confirmar Senha <span id="sysuser-confirm-password-req" class="text-rose-400">*</span>:</label>
+              <input type="password" id="sysuser-confirm-password" placeholder="Repita a senha" class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400">
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 pt-3 sm:pt-4 border-t border-slate-800/60 shrink-0">
+          <button type="button" onclick="closeSystemUserModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer">Cancelar</button>
+          <button type="submit" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-600/20 transition-all cursor-pointer">Salvar Operador</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Cadastro / Edição de Empresa / Filial (80% Largura x 90% Altura) -->
+  <div id="modal-branch" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0d1320] border border-slate-800 rounded-3xl p-5 sm:p-8 w-[95vw] md:w-[80vw] max-w-[80vw] h-[90vh] max-h-[90vh] shadow-2xl flex flex-col justify-between overflow-hidden">
+      
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800/60 pb-3 sm:pb-4 shrink-0">
+        <h3 id="modal-branch-title" class="text-sm sm:text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-building text-cyan-400"></i> Cadastrar Empresa / Filial
+        </h3>
+        <button onclick="closeBranchModal()" class="text-slate-400 hover:text-rose-400 transition-colors text-base p-1.5 rounded-xl hover:bg-slate-800" title="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Form Body with Scrollable Area -->
+      <form id="form-branch" onsubmit="saveBranch(event)" class="flex-1 flex flex-col justify-between overflow-hidden gap-4 py-2">
+        <div class="flex-1 overflow-y-auto pr-1 sm:pr-2 scrollbar-thin flex flex-col gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">Código da Filial <span class="text-rose-400">*</span> (Máx 10):</label>
+              <input type="text" id="branch-code" required maxlength="10" placeholder="ex: 0001" class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400 font-mono uppercase">
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-semibold text-slate-300">CNPJ:</label>
+              <input type="text" id="branch-cnpj" maxlength="18" oninput="maskCnpjInput(this)" placeholder="00.000.000/0001-00" class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400 font-mono">
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-slate-300">Razão Social / Nome Fantasia <span class="text-rose-400">*</span>:</label>
+            <input type="text" id="branch-name" required placeholder="ex: Filial São Paulo" class="bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl px-4 py-3 text-xs sm:text-sm text-white outline-none focus:ring-1 focus:ring-cyan-400">
+          </div>
+
+          <div class="flex items-center justify-between bg-[#090d16] border border-slate-800 rounded-2xl p-4 mt-1">
+            <div class="flex flex-col">
+              <span class="text-xs sm:text-sm font-semibold text-slate-300 flex items-center gap-2">
+                <i class="fa-solid fa-toggle-on text-slate-400"></i> Status Operacional da Filial
+              </span>
+              <small class="text-[11px] text-slate-500">Filiais inativas não poderão ser vinculadas a novos registros.</small>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="branch-active" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 pt-3 sm:pt-4 border-t border-slate-800/60 shrink-0">
+          <button type="button" onclick="closeBranchModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer">Cancelar</button>
+          <button type="submit" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-600/20 transition-all cursor-pointer">Salvar Filial</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- OVERLAY DE LOGIN DO SISTEMA (TELA DE AUTENTICAÇÃO DE OPERADOR) -->
+  <div id="system-login-overlay" class="fixed inset-0 bg-[#090d16] z-[99999] flex items-center justify-center p-4">
+    <div class="bg-[#0d1320] border border-slate-800 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl flex flex-col gap-6 relative">
+      <button type="button" onclick="toggleTheme()" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-800/50 hover:bg-slate-700 text-slate-300 transition-all theme-toggle-btn cursor-pointer shadow-sm" title="Alternar Tema (Escuro / Claro)">
+        <i class="theme-toggle-icon fa-solid fa-sun text-amber-400 text-xs"></i>
+      </button>
+
+      <div class="flex flex-col items-center text-center gap-2">
+        <img src="logo.png?v=1.0" alt="FaceID Logo" class="w-20 h-20 rounded-3xl object-contain shadow-2xl shadow-cyan-500/15 border border-cyan-500/30 bg-[#151c2e] p-2.5">
+        <h2 class="text-xl font-bold text-white tracking-tight mt-1">FaceID <span class="text-cyan-400">Biometrics</span></h2>
+        <p class="text-xs text-slate-400">Autenticação de Operador do Sistema</p>
+      </div>
+
+      <form id="form-system-login" onsubmit="handleSystemLogin(event)" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-slate-300">Login / Usuário:</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+            <input type="text" id="login-username" required placeholder="Digite seu login (ex: admin)" class="w-full bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-white outline-none focus:ring-1 focus:ring-cyan-400">
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold text-slate-300">Senha:</label>
+          <div class="relative">
+            <i class="fa-solid fa-key absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+            <input type="password" id="login-password" required placeholder="Digite sua senha" class="w-full bg-[#090d16] border border-slate-800 focus:border-cyan-400 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-white outline-none focus:ring-1 focus:ring-cyan-400">
+          </div>
+        </div>
+
+        <div id="login-error-msg" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs text-center font-medium"></div>
+
+        <button type="submit" id="btn-login-submit" class="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-cyan-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar no Sistema
+        </button>
+
+        <button type="button" onclick="triggerPwaInstall()" class="w-full py-2.5 px-3 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer" title="Instalar como App Nativo">
+          <i class="fa-solid fa-mobile-screen-button"></i> Abrir / Instalar em Tela Cheia
+        </button>
+
+        <div class="p-3 bg-[#090d16] border border-slate-800/80 rounded-xl text-center text-[11px] text-slate-400">
+          <i class="fa-solid fa-circle-info text-cyan-400 mr-1"></i> Acesso Inicial Master: <strong class="text-cyan-400 font-mono">admin</strong> / <strong class="text-cyan-400 font-mono">admin123</strong>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MENU INFERIOR COLADO À BASE (MOBILE ONLY: fixed bottom-0 left-0 right-0 w-full h-16) -->
+  <nav id="nav-bar-bottom" class="fixed bottom-0 left-0 right-0 w-full h-16 bg-[#0d1320] border-t border-slate-800/80 z-50 flex md:hidden items-center justify-around px-2 shadow-2xl rounded-none">
+    
+    <!-- 1. Cadastrar -->
+    <button id="nav-register" onclick="switchTab('register')" class="flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-white transition-all px-1.5 py-1 cursor-pointer">
+      <i class="fa-solid fa-user-plus text-sm"></i>
+      <span class="text-[9px] font-medium tracking-tight">Cadastrar</span>
+    </button>
+
+    <!-- 2. Histórico de Auditoria -->
+    <button id="nav-audit" onclick="switchTab('audit')" class="flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-white transition-all px-1.5 py-1 cursor-pointer">
+      <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+      <span class="text-[9px] font-medium tracking-tight">Auditoria</span>
+    </button>
+
+    <!-- 3. Status do Sistema -->
+    <button id="nav-status" onclick="switchTab('status')" class="flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-white transition-all px-1.5 py-1 cursor-pointer">
+      <i class="fa-solid fa-sliders text-sm"></i>
+      <span class="text-[9px] font-medium tracking-tight">Status</span>
+    </button>
+
+    <!-- 4. CENTRAL: Autenticação / Leitura Biométrica -->
+    <button id="nav-auth" onclick="switchTab('auth')" class="flex flex-col items-center justify-center -mt-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold w-12 h-12 rounded-full shadow-lg shadow-cyan-600/30 transition-all active:scale-95 shrink-0 border-2 border-[#090d16] cursor-pointer" title="Autenticação Biométrica">
+      <i class="fa-solid fa-shield-halved text-base"></i>
+    </button>
+
+    <!-- 5. Credenciais -->
+    <button id="nav-credentials" onclick="switchTab('credentials')" class="flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-white transition-all px-1.5 py-1 cursor-pointer">
+      <i class="fa-solid fa-id-card text-sm"></i>
+      <span class="text-[9px] font-medium tracking-tight">Credenciais</span>
+    </button>
+
+    <!-- 6. Operadores -->
+    <button id="nav-system_users" onclick="switchTab('system_users')" class="flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-white transition-all px-1.5 py-1 cursor-pointer">
+      <i class="fa-solid fa-user-gear text-sm"></i>
+      <span class="text-[9px] font-medium tracking-tight">Operadores</span>
+    </button>
+
+    <!-- 7. Sair / Logoff -->
+    <button id="nav-logout" onclick="handleSystemLogout()" class="flex flex-col items-center justify-center gap-0.5 text-rose-400 hover:text-rose-300 transition-all px-1.5 py-1 cursor-pointer" title="Sair do Sistema">
+      <i class="fa-solid fa-right-from-bracket text-sm"></i>
+      <span class="text-[9px] font-medium tracking-tight">Sair</span>
+    </button>
+
+  </nav>
+
+  <!-- TOAST NOTIFICATION CONTAINER (Figma Tailwind Alerts System) -->
+  <div id="toast-notification-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- MODAL DE ALERTA GERAL ESTILO FIGMA TAILWIND ALERT (Substitui o alert() nativo do navegador) -->
+  <div id="modal-alert-dialog" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999999] flex items-center justify-center p-4 hidden">
+    <div id="alert-dialog-card" class="bg-[#0d1320] border border-slate-800 rounded-3xl p-6 sm:p-7 w-full max-w-md shadow-2xl flex flex-col gap-4 relative overflow-hidden">
+      <!-- Glow Accent Line -->
+      <div id="alert-dialog-accent-glow" class="absolute top-0 left-0 right-0 h-1.5 bg-cyan-500"></div>
+
+      <!-- Close X Button -->
+      <button type="button" id="alert-dialog-btn-close" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-all cursor-pointer" title="Fechar">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <div class="flex items-start gap-4">
+        <div id="alert-dialog-icon-pill" class="w-14 h-14 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+          <i id="alert-dialog-icon" class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="flex flex-col min-w-0 flex-1 pt-0.5">
+          <h3 id="alert-dialog-title" class="text-base sm:text-lg font-bold text-white tracking-tight leading-snug">Operação Concluída</h3>
+          <p id="alert-dialog-message" class="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed break-words"></p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 mt-2 pt-3 border-t border-slate-800/80">
+        <button type="button" id="alert-dialog-btn-ok" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-check"></i> Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO ESTILO FIGMA TAILWIND ALERT -->
+  <div id="modal-confirm-dialog" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999999] flex items-center justify-center p-4 hidden">
+    <div id="confirm-dialog-card" class="bg-[#0d1320] border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl flex flex-col gap-4 relative overflow-hidden">
+      <div id="confirm-accent-glow" class="absolute top-0 left-0 right-0 h-1 bg-rose-500"></div>
+      
+      <div class="flex items-start gap-3.5">
+        <div id="confirm-icon-pill" class="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-xl shrink-0 shadow-inner">
+          <i id="confirm-icon" class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="flex flex-col min-w-0 flex-1">
+          <h3 id="confirm-title" class="text-base font-bold text-white tracking-tight">Confirmar Ação</h3>
+          <p id="confirm-message" class="text-xs text-slate-300 mt-1 leading-relaxed">Você tem certeza que deseja executar esta operação?</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 mt-2 pt-2 border-t border-slate-800/80">
+        <button type="button" id="confirm-btn-cancel" class="px-4 py-2.5 bg-slate-800/90 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-all cursor-pointer">
+          Cancelar
+        </button>
+        <button type="button" id="confirm-btn-ok" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-check"></i> Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE INSTRUÇÕES DE INSTALAÇÃO PWA / TELA CHEIA (ITEM 2) -->
+  <div id="modal-pwa-instructions" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999999] flex items-center justify-center p-4 hidden">
+    <div class="bg-[#0d1320] border border-slate-800 rounded-3xl p-6 sm:p-7 w-full max-w-md shadow-2xl flex flex-col gap-4 relative overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-cyan-500"></div>
+
+      <button type="button" onclick="closePwaModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-all cursor-pointer" title="Fechar">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+
+      <div class="flex items-center gap-3 border-b border-slate-800/80 pb-3">
+        <div class="w-11 h-11 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xl shrink-0 shadow-inner">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+        </div>
+        <div class="flex flex-col min-w-0">
+          <h3 class="text-base font-bold text-white tracking-tight">Usar em Tela Cheia (App)</h3>
+          <p class="text-[11px] text-slate-400">Sem barra de URL e sem bordas do navegador</p>
+        </div>
+      </div>
+
+      <!-- Android / Chrome Steps -->
+      <div class="flex flex-col gap-2 p-3 bg-[#090d16] border border-slate-800 rounded-2xl">
+        <span class="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+          <i class="fa-brands fa-android"></i> No Android / Google Chrome:
+        </span>
+        <ol class="text-[11px] text-slate-300 list-decimal list-inside space-y-1">
+          <li>Toque no menu de <strong>3 pontinhos (⋮)</strong> no topo direito.</li>
+          <li>Selecione <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</li>
+        </ol>
+      </div>
+
+      <!-- iOS / Safari Steps -->
+      <div class="flex flex-col gap-2 p-3 bg-[#090d16] border border-slate-800 rounded-2xl">
+        <span class="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+          <i class="fa-brands fa-apple"></i> No iPhone / iPad (Safari):
+        </span>
+        <ol class="text-[11px] text-slate-300 list-decimal list-inside space-y-1">
+          <li>Toque no botão de <strong>Compartilhar</strong> (<i class="fa-solid fa-arrow-up-from-bracket"></i> no rodapé).</li>
+          <li>Role e toque em <strong>"Adicionar à Tela de Início"</strong>.</li>
+        </ol>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800/80">
+        <button type="button" onclick="closePwaModal()" class="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-check"></i> Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SheetJS for Native Excel (.xlsx) Export -->
+  <script src="xlsx.full.min.js"></script>
+  <!-- Custom App JS -->
+  <script src="app.js?v=5.1"></script>
+</body>
+</html>
