@@ -3,11 +3,25 @@ const fs = require('fs');
 const path = require('path');
 
 function createPgPool() {
+  const databaseUrl = process.env.DATABASE_URL;
+  
+  if (databaseUrl) {
+    const isSupabaseOrCloud = databaseUrl.includes('supabase') || databaseUrl.includes('neon.tech') || databaseUrl.includes('render.com') || databaseUrl.includes('sslmode=require');
+    return new Pool({
+      connectionString: databaseUrl,
+      ssl: isSupabaseOrCloud || process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : false,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000
+    });
+  }
+
   const host = process.env.POSTGRES_HOST || 'localhost';
   const port = parseInt(process.env.POSTGRES_PORT, 10) || 5432;
   const user = process.env.POSTGRES_USER || 'faceid_user';
   const password = process.env.POSTGRES_PASSWORD || 'faceid_pass_secure_2026';
   const database = process.env.POSTGRES_DB || 'faceid_db';
+  const useSsl = process.env.POSTGRES_SSL === 'true' || host.includes('supabase') || host.includes('neon.tech');
 
   const pool = new Pool({
     host,
@@ -15,9 +29,10 @@ function createPgPool() {
     user,
     password,
     database,
+    ssl: useSsl ? { rejectUnauthorized: false } : false,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000
+    connectionTimeoutMillis: 10000
   });
 
   return pool;
