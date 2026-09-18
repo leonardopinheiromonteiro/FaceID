@@ -1,23 +1,21 @@
-# DevSecOps Hardened Dockerfile
-FROM node:22-alpine
+FROM node:20-alpine
 
-# Set working directory
-WORKDIR /usr/src/app
+# Definir diretório de trabalho
+WORKDIR /app
 
-# Copy package manifests first for efficient caching
+# Instalar dependências
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Install production dependencies only
-RUN npm ci --only=production
-
-# Copy application source code
+# Copiar código fonte, modelos neurais e frontend
 COPY . .
 
-# Expose HTTP and HTTPS ports
-EXPOSE 3000 3443
+# Variáveis padrão de ambiente para produção
+ENV NODE_ENV=production
+ENV PORT=8080
 
-# Run as non-root user (Security Best Practice)
-USER node
+# Expor porta do Cloud Run
+EXPOSE 8080
 
-# Start server
+# Iniciar o servidor
 CMD ["node", "server.js"]

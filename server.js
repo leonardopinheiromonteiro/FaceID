@@ -268,7 +268,7 @@ async function bootstrap() {
   }));
 
   // 6. Start Servers
-  const { cert, key, localIP } = getSSLCertificate();
+  const isCloudEnv = Boolean(process.env.K_SERVICE || process.env.RENDER || process.env.RAILWAY_STATIC_URL || process.env.DISABLE_HTTPS === 'true');
 
   const httpServer = http.createServer(app);
   httpServer.listen(PORT, () => {
@@ -276,17 +276,23 @@ async function bootstrap() {
     console.log(`  FACEID BIOMETRIC SERVER ACTIVE`);
     console.log(`  BANCO DE DADOS:  ${activeDbName}`);
     console.log(`  SWAGGER API DOCS: http://localhost:${PORT}/api-docs`);
-    console.log(`  HTTP (Desktop):   http://localhost:${PORT}`);
-    console.log(`  HTTP (Rede):      http://${localIP}:${PORT}`);
+    console.log(`  HTTP PORT:        ${PORT}`);
     console.log(`===========================================================`);
   });
 
-  const httpsServer = https.createServer({ key, cert }, app);
-  httpsServer.listen(HTTPS_PORT, () => {
-    console.log(`  HTTPS (Mobile):   https://${localIP}:${HTTPS_PORT}`);
-    console.log(`  HTTPS (Desktop):  https://localhost:${HTTPS_PORT}`);
-    console.log(`===========================================================`);
-  });
+  if (!isCloudEnv) {
+    try {
+      const { cert, key, localIP } = getSSLCertificate();
+      const httpsServer = https.createServer({ key, cert }, app);
+      httpsServer.listen(HTTPS_PORT, () => {
+        console.log(`  HTTPS (Mobile Local): https://${localIP}:${HTTPS_PORT}`);
+        console.log(`  HTTPS (Desktop Local): https://localhost:${HTTPS_PORT}`);
+        console.log(`===========================================================`);
+      });
+    } catch (e) {
+      console.warn('[SSL WARN] Servidor HTTPS local não inicializado:', e.message);
+    }
+  }
 }
 
 bootstrap().catch(err => {

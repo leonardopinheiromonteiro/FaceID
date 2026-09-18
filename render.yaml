@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: faceid-biometrics
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_TYPE
+        value: postgres
+      - key: POSTGRES_SSL
+        value: "true"
+      - key: FACE_MATCH_THRESHOLD
+        value: "0.55"
+      - key: LOG_REPLACEMENT_INTERVAL_MINUTES
+        value: "5"
+      - key: DATABASE_URL
+        sync: false
